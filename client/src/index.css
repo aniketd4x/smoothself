@@ -1,0 +1,73 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@theme {
+  --color-brand-primary: #332d55;
+  --color-brand-hover: #282344;
+  --color-brand-accent: #9a84c8;
+  --color-brand-sale: #da3f3f;
+  --color-brand-bg: #ffffff;
+  --color-brand-surface: #f5f5f5;
+  --color-brand-border: #eeeeee;
+  --color-brand-text: #212121;
+  --color-brand-muted: #666666;
+
+  --font-serif: 'Playfair Display', 'Butler', serif;
+  --font-sans: 'Jost', 'Inter', sans-serif;
+
+  --shadow-drawer: -10px 0 30px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --shadow-sticky: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+    color: #332d55;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Custom smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #332d55;
+}
+
+/* Keyframes & Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.aspect-product {
+  aspect-ratio: 3 / 4;
+}
