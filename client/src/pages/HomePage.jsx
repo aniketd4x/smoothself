@@ -41,7 +41,7 @@ const HomePage = () => {
             tagline: 'SMOOTHSELF SIGNATURE COLLECTION • 200ML',
             buttonText: 'Shop Strawberry — ₹249',
             buttonLink: '/product/strawberry-lotion',
-            imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=1800&auto=format&fit=crop'
+            imageUrl: '/hero_strawberry.jpg'
           },
           {
             title: 'Vanilla & Vitamin E Body Lotion',
@@ -49,7 +49,7 @@ const HomePage = () => {
             tagline: 'DAILY-USE FORMULA • 200ML • CALMING COMFORT',
             buttonText: 'Shop Vanilla — ₹249',
             buttonLink: '/product/vanilla-body-lotion',
-            imageUrl: 'https://images.unsplash.com/photo-1608248597359-543169b1836c?q=80&w=1800&auto=format&fit=crop'
+            imageUrl: '/hero_vanilla.jpg'
           }
         ]);
       }
@@ -441,7 +441,55 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* 5. VERIFIED CUSTOMER REVIEWS */}
+      {/* 5. EDITORIAL BOTANICAL FEATURE SECTION */}
+      <section className="relative py-20 bg-brand-surface overflow-hidden border-b border-brand-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            <div className="lg:col-span-7">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-brand-border group">
+                <img
+                  src="/editorial_duo_lotions.jpg"
+                  alt="SmoothSelf Pure Botanical Formulation & Texture"
+                  className="w-full h-[360px] sm:h-[440px] object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+              </div>
+            </div>
+            <div className="lg:col-span-5 space-y-6">
+              <span className="inline-block text-xs font-semibold uppercase tracking-[0.25em] text-brand-muted bg-brand-primary/5 px-3.5 py-1.5 rounded-full border border-brand-primary/10">
+                Botanical Alchemy & Purity
+              </span>
+              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-brand-primary leading-tight">
+                Crafted for Touch, Formulated for Barrier Health
+              </h2>
+              <p className="text-sm text-brand-muted leading-relaxed">
+                Every drop of SmoothSelf lotion is enriched with cold-pressed botanical oils, active Vitamin E, and clean fruit essences. Designed to absorb deeply in seconds without greasiness, leaving skin velvety, fragrant, and radiant all day.
+              </p>
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div className="p-4 rounded-xl bg-white border border-brand-border shadow-sm">
+                  <p className="font-serif text-2xl font-bold text-brand-primary">24h</p>
+                  <p className="text-xs text-brand-muted mt-1">Barrier Moisture Lock</p>
+                </div>
+                <div className="p-4 rounded-xl bg-white border border-brand-border shadow-sm">
+                  <p className="font-serif text-2xl font-bold text-brand-primary">100%</p>
+                  <p className="text-xs text-brand-muted mt-1">Clean & Vegan Actives</p>
+                </div>
+              </div>
+              <div className="pt-2">
+                <Link
+                  to="/shop"
+                  className="inline-flex items-center space-x-2 px-8 py-3.5 bg-brand-primary hover:bg-brand-hover text-white text-xs sm:text-sm font-semibold rounded-xl shadow-md transition duration-200"
+                >
+                  <span>Explore Both Formulations</span>
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. VERIFIED CUSTOMER REVIEWS */}
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-xl mx-auto mb-12">
