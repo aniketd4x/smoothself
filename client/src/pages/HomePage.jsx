@@ -17,43 +17,91 @@ import {
   ShoppingBag
 } from 'lucide-react';
 
+import heroStrawberryImg from '../assets/hero_strawberry.jpg';
+import heroVanillaImg from '../assets/hero_vanilla.jpg';
+import editorialDuoImg from '../assets/editorial_duo_lotions.jpg';
+
+const DEFAULT_BANNERS = [
+  {
+    _id: 'default-strawberry',
+    title: 'Strawberry & Vitamin E Body Lotion',
+    subtitle: 'Instant Radiance, Skin Brightening & 24-Hour Hydration with Pure Strawberry Extracts.',
+    tagline: 'SMOOTHSELF SIGNATURE COLLECTION • 200ML',
+    buttonText: 'Shop Strawberry — ₹249',
+    buttonLink: '/product/strawberry-lotion',
+    imageUrl: heroStrawberryImg
+  },
+  {
+    _id: 'default-vanilla',
+    title: 'Vanilla & Vitamin E Body Lotion',
+    subtitle: 'Calming Delicate Vanilla Fragrance, Deep Hydration & Velvety Soft Skin for All Skin Types.',
+    tagline: 'DAILY-USE FORMULA • 200ML • CALMING COMFORT',
+    buttonText: 'Shop Vanilla — ₹249',
+    buttonLink: '/product/vanilla-body-lotion',
+    imageUrl: heroVanillaImg
+  }
+];
+
+const DEFAULT_PRODUCTS = [
+  {
+    _id: 'prod-vanilla-200',
+    name: 'Vanilla & Vitamin E Body Lotion — 200ml',
+    slug: 'vanilla-body-lotion',
+    price: 249,
+    compareAtPrice: 299,
+    images: ['/uploads/1_119e1d29-aca2-4ca0-8362-37de-1790868403485-554707.webp', heroVanillaImg],
+    badges: ['BESTSELLER', 'HOT'],
+    rating: 4.9,
+    numReviews: 48,
+    stock: 100,
+    shortDescription: 'Deep 24-hour hydration infused with Madagascar Vanilla and Vitamin E for velvety soft skin.'
+  },
+  {
+    _id: 'prod-strawberry-200',
+    name: 'Strawberry & Vitamin E Body Lotion — 200ml',
+    slug: 'strawberry-lotion',
+    price: 249,
+    compareAtPrice: 299,
+    images: ['/uploads/1_d9f975a2-2422-4fcb-a85e-7d69-1790868473669-57591.webp', heroStrawberryImg],
+    badges: ['NEW', 'RADIANCE'],
+    rating: 4.9,
+    numReviews: 36,
+    stock: 100,
+    shortDescription: 'Pure strawberry fruit extracts actively brighten, tone, and impart a juicy dewy glow.'
+  }
+];
+
 const HomePage = () => {
   const { settings, addToCart, setIsCartOpen } = useApp();
-  const [products, setProducts] = useState([]);
-  const [banners, setBanners] = useState([]);
+  const [products, setProducts] = useState(DEFAULT_PRODUCTS);
+  const [banners, setBanners] = useState(DEFAULT_BANNERS);
   const [activeSlide, setActiveSlide] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch products and banners
+  // Fetch products and banners gracefully
   useEffect(() => {
-    Promise.all([
-      fetch('/api/products').then(r => r.json()),
-      fetch('/api/banners').then(r => r.json())
-    ]).then(([prodData, bannerData]) => {
-      if (prodData.success) setProducts(prodData.products);
-      if (bannerData.success && bannerData.banners?.length > 0) {
-        setBanners(bannerData.banners);
-      } else {
-        setBanners([
-          {
-            title: 'Strawberry & Vitamin E Body Lotion',
-            subtitle: 'Instant Radiance, Skin Brightening & 24-Hour Hydration with Pure Strawberry Extracts.',
-            tagline: 'SMOOTHSELF SIGNATURE COLLECTION • 200ML',
-            buttonText: 'Shop Strawberry — ₹249',
-            buttonLink: '/product/strawberry-lotion',
-            imageUrl: '/hero_strawberry.jpg'
-          },
-          {
-            title: 'Vanilla & Vitamin E Body Lotion',
-            subtitle: 'Calming Delicate Vanilla Fragrance, Deep Hydration & Velvety Soft Skin for All Skin Types.',
-            tagline: 'DAILY-USE FORMULA • 200ML • CALMING COMFORT',
-            buttonText: 'Shop Vanilla — ₹249',
-            buttonLink: '/product/vanilla-body-lotion',
-            imageUrl: '/hero_vanilla.jpg'
-          }
-        ]);
-      }
-    }).catch(console.error).finally(() => setIsLoading(false));
+    fetch('/api/products')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.success && data.products?.length > 0) {
+          setProducts(data.products);
+        }
+      })
+      .catch(() => {});
+
+    fetch('/api/banners')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.success && data.banners?.length > 0) {
+          const resolved = data.banners.map((b) => {
+            if (b.imageUrl === '/hero_strawberry.jpg') return { ...b, imageUrl: heroStrawberryImg };
+            if (b.imageUrl === '/hero_vanilla.jpg') return { ...b, imageUrl: heroVanillaImg };
+            return b;
+          });
+          setBanners(resolved);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Slide auto-play
@@ -77,7 +125,13 @@ const HomePage = () => {
             }`}
           >
             {/* Background Image with Dark Vignette */}
-            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${banner.imageUrl})` }}>
+            <div className="absolute inset-0 overflow-hidden">
+              <img
+                src={banner.imageUrl || (index === 0 ? heroStrawberryImg : heroVanillaImg)}
+                alt={banner.title}
+                className="w-full h-full object-cover object-center select-none"
+                loading={index === 0 ? 'eager' : 'lazy'}
+              />
               <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-transparent"></div>
             </div>
 
@@ -448,7 +502,7 @@ const HomePage = () => {
             <div className="lg:col-span-7">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-brand-border group">
                 <img
-                  src="/editorial_duo_lotions.jpg"
+                  src={editorialDuoImg}
                   alt="SmoothSelf Pure Botanical Formulation & Texture"
                   className="w-full h-[360px] sm:h-[440px] object-cover transition-transform duration-700 group-hover:scale-105"
                 />

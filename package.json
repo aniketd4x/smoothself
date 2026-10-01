@@ -5,8 +5,8 @@
   "scripts": {
     "start": "node server/server.js",
     "server": "node server/server.js",
-    "client": "npm run dev --prefix client",
-    "build": "npm --prefix client install && npm --prefix client run build",
+    "sync-uploads": "node -e \"const fs = require('fs'); if (fs.existsSync('uploads')) fs.cpSync('uploads', 'client/public/uploads', {recursive: true, force: true});\"",
+    "build": "npm run sync-uploads && npm --prefix client install && npm --prefix client run build",
     "seed": "node server/seed/seedData.js",
     "verify": "node verify_system.js"
   },
