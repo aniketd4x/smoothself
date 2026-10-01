@@ -201,7 +201,7 @@ const Header = () => {
                     ) : (
                       <>
                         <div className="px-4 py-2 border-b border-brand-border">
-                          <p className="font-semibold text-brand-primary">Welcome to Aura</p>
+                          <p className="font-semibold text-brand-primary">Welcome to SmoothSelf</p>
                           <p className="text-xs text-brand-muted">Sign in to track orders</p>
                         </div>
                         <Link
@@ -290,12 +290,6 @@ const Header = () => {
                     {link.name}
                   </Link>
                 ))}
-                <Link
-                  to="/track-order"
-                  className="text-lg font-medium text-brand-text hover:text-brand-primary py-2 border-b border-brand-border/40"
-                >
-                  Track Order
-                </Link>
                 <Link
                   to="/faq"
                   className="text-lg font-medium text-brand-text hover:text-brand-primary py-2"

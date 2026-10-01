@@ -19,18 +19,94 @@ import {
   Share2
 } from 'lucide-react';
 
+const FALLBACK_PRODUCTS = {
+  'strawberry-lotion': {
+    _id: 'prod-strawberry-200',
+    name: 'Strawberry & Vitamin E Body Lotion — 200ml',
+    slug: 'strawberry-lotion',
+    price: 249,
+    compareAtPrice: 299,
+    categoryName: 'Radiance & Glow',
+    stock: 100,
+    rating: 4.9,
+    numReviews: 36,
+    badges: ['NEW', 'RADIANCE', '-17%'],
+    shortDescription: 'Pure strawberry fruit extracts actively brighten, even out dull texture, and leave your skin sparkling with a crisp, sweet berry aura.',
+    description: 'Enriched with pure natural strawberry fruit extracts, clinical Vitamin E, and light moisturizing lipids. This featherlight lotion absorbs in seconds to revive dull skin and lock in moisture for 24 hours without feeling heavy or greasy.',
+    ingredients: 'Aqua, Fragaria Ananassa (Strawberry) Fruit Extract, Tocopheryl Acetate (Vitamin E), Glycerin, Butyrospermum Parkii, Caprylic/Capric Triglyceride, Sodium Hyaluronate, Fragrance (Natural Berry Aroma).',
+    howToUse: 'Smooth generously over arms, legs, and body after showering or whenever your skin needs fresh, radiant hydration.',
+    images: [
+      '/uploads/1_d9f975a2-2422-4fcb-a85e-7d69-1790868473669-57591.webp',
+      '/uploads/2_03e76047-081b-4e6b-bd71-bc21-1790868477491-734263.webp',
+      '/uploads/IMG-4747-1790868486919-999122.webp',
+      '/uploads/IMG-4765-1790868494330-847031.webp'
+    ],
+    variants: [
+      {
+        name: 'Size',
+        options: [
+          { title: '200ml Regular', price: 249, compareAtPrice: 299, stock: 100 }
+        ]
+      }
+    ],
+    benefits: [
+      { title: 'Instant Berry Radiance', description: 'Natural strawberry extracts gently revive dull skin for a healthy glowing complexion.' },
+      { title: 'Non-Greasy Hydration', description: 'Ultra-light texture absorbs in seconds, leaving skin silky-smooth with zero residue.' },
+      { title: 'Vitamin E Protection', description: 'Reinforces the skin barrier against environmental stressors and dryness.' }
+    ]
+  },
+  'vanilla-body-lotion': {
+    _id: 'prod-vanilla-200',
+    name: 'Vanilla & Vitamin E Body Lotion — 200ml',
+    slug: 'vanilla-body-lotion',
+    price: 249,
+    compareAtPrice: 299,
+    categoryName: 'Calming Hydration',
+    stock: 100,
+    rating: 4.9,
+    numReviews: 48,
+    badges: ['BESTSELLER', 'HOT', '-17%'],
+    shortDescription: 'Deep 24-hour hydration infused with Madagascar Vanilla and Vitamin E for velvety soft, comforted skin.',
+    description: 'Our signature restorative formula combines cold-pressed sweet almond oil, pure Madagascar vanilla bean extract, and micronized Vitamin E to deeply hydrate, soothe dryness, and leave behind a warm, comforting scent that lingers for over 12 hours.',
+    ingredients: 'Aqua, Prunus Amygdalus Dulcis (Sweet Almond) Oil, Glycerin, Caprylic/Capric Triglyceride, Cetearyl Alcohol, Tocopheryl Acetate (Vitamin E), Vanilla Planifolia Fruit Extract, Butyrospermum Parkii, Sodium Hyaluronate.',
+    howToUse: 'Smooth generously over cleansed skin after showering or whenever skin needs intense moisture. Pay special attention to dry areas like elbows, knees, and ankles.',
+    images: [
+      '/uploads/1_119e1d29-aca2-4ca0-8362-37de-1790868403485-554707.webp',
+      '/uploads/2_e56b5dc1-b87b-4d77-9fce-06e0-1790868411067-148273.webp',
+      '/uploads/IMG-4746-1790868436434-357985.webp',
+      '/uploads/IMG-4764-1790868445689-9682.webp'
+    ],
+    variants: [
+      {
+        name: 'Size',
+        options: [
+          { title: '200ml Regular', price: 249, compareAtPrice: 299, stock: 100 }
+        ]
+      }
+    ],
+    benefits: [
+      { title: '24-Hour Deep Hydration', description: 'Locks moisture into cellular layers for supple, plumping softness all day long.' },
+      { title: 'Warm Calming Vanilla', description: 'Natural Madagascar vanilla aroma that comforts the senses and lasts over 12 hours.' },
+      { title: 'Fast Absorption', description: 'Zero stickiness; absorbs instantly so you can get dressed immediately.' }
+    ]
+  }
+};
+
 const ProductDetailPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { addToCart, toggleWishlist, isInWishlist, showToast } = useApp();
 
-  const [product, setProduct] = useState(null);
-  const [relatedProducts, setRelatedProducts] = useState([]);
+  const isStrawberry = slug?.includes('strawberry');
+  const initialFallback = isStrawberry ? FALLBACK_PRODUCTS['strawberry-lotion'] : FALLBACK_PRODUCTS['vanilla-body-lotion'];
+
+  const [product, setProduct] = useState(initialFallback);
+  const [relatedProducts, setRelatedProducts] = useState(isStrawberry ? [FALLBACK_PRODUCTS['vanilla-body-lotion']] : [FALLBACK_PRODUCTS['strawberry-lotion']]);
   const [reviews, setReviews] = useState([]);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState(initialFallback?.variants?.[0]?.options?.[0] || null);
   const [quantity, setQuantity] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Accordion drawer states
   const [openAccordions, setOpenAccordions] = useState({
@@ -54,32 +130,41 @@ const ProductDetailPage = () => {
   });
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
-  // Fetch product data & reviews
+  // Fetch product data & reviews gracefully
   useEffect(() => {
-    setIsLoading(true);
     setSelectedImage(0);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
+    const currentFallback = slug?.includes('strawberry')
+      ? FALLBACK_PRODUCTS['strawberry-lotion']
+      : FALLBACK_PRODUCTS['vanilla-body-lotion'];
+
     fetch(`/api/products/${slug}`)
-      .then(res => res.json())
+      .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (data.success && data.product) {
+        if (data?.success && data.product) {
           setProduct(data.product);
           setRelatedProducts(data.relatedProducts || []);
           if (data.product.variants?.[0]?.options?.length > 0) {
             setSelectedVariant(data.product.variants[0].options[0]);
           }
-
-          // Fetch reviews for this product
-          fetch(`/api/reviews/product/${data.product._id}`)
-            .then(r => r.json())
-            .then(revData => {
-              if (revData.success) setReviews(revData.reviews);
-            })
-            .catch(console.error);
+          if (data.product._id) {
+            fetch(`/api/reviews/product/${data.product._id}`)
+              .then(r => r.ok ? r.json() : null)
+              .then(revData => {
+                if (revData?.success) setReviews(revData.reviews || []);
+              })
+              .catch(() => {});
+          }
+        } else {
+          setProduct(currentFallback);
+          setSelectedVariant(currentFallback.variants[0].options[0]);
         }
       })
-      .catch(console.error)
+      .catch(() => {
+        setProduct(currentFallback);
+        setSelectedVariant(currentFallback.variants[0].options[0]);
+      })
       .finally(() => setIsLoading(false));
   }, [slug]);
 

@@ -3,6 +3,40 @@ import { useSearchParams, Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { SlidersHorizontal, ChevronRight, X } from 'lucide-react';
 
+import heroStrawberryImg from '../assets/hero_strawberry.jpg';
+import heroVanillaImg from '../assets/hero_vanilla.jpg';
+
+const FALLBACK_PRODUCTS = [
+  {
+    _id: 'prod-strawberry-200',
+    name: 'Strawberry & Vitamin E Body Lotion — 200ml',
+    slug: 'strawberry-lotion',
+    price: 249,
+    compareAtPrice: 299,
+    images: ['/uploads/1_d9f975a2-2422-4fcb-a85e-7d69-1790868473669-57591.webp', heroStrawberryImg],
+    badges: ['NEW', 'RADIANCE'],
+    rating: 4.9,
+    numReviews: 36,
+    stock: 100,
+    category: { slug: 'lotions', name: 'Body Lotions' },
+    shortDescription: 'Pure strawberry fruit extracts actively brighten, tone, and impart a juicy dewy glow.'
+  },
+  {
+    _id: 'prod-vanilla-200',
+    name: 'Vanilla & Vitamin E Body Lotion — 200ml',
+    slug: 'vanilla-body-lotion',
+    price: 249,
+    compareAtPrice: 299,
+    images: ['/uploads/1_119e1d29-aca2-4ca0-8362-37de-1790868403485-554707.webp', heroVanillaImg],
+    badges: ['BESTSELLER', 'HOT'],
+    rating: 4.9,
+    numReviews: 48,
+    stock: 100,
+    category: { slug: 'lotions', name: 'Body Lotions' },
+    shortDescription: 'Deep 24-hour hydration infused with Madagascar Vanilla and Vitamin E for velvety soft skin.'
+  }
+];
+
 const ShopPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
@@ -24,12 +58,26 @@ const ShopPage = () => {
     }
 
     Promise.all([
-      fetch(url).then(r => r.json()),
-      fetch('/api/categories').then(r => r.json())
+      fetch(url).then(r => r.json()).catch(() => null),
+      fetch('/api/categories').then(r => r.json()).catch(() => null)
     ]).then(([prodData, catData]) => {
-      if (prodData.success) setProducts(prodData.products);
-      if (catData.success) setCategories(catData.categories);
-    }).catch(console.error).finally(() => setIsLoading(false));
+      if (prodData && prodData.success && Array.isArray(prodData.products) && prodData.products.length > 0) {
+        setProducts(prodData.products);
+      } else {
+        let filtered = [...FALLBACK_PRODUCTS];
+        if (searchTerm) {
+          filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+        }
+        setProducts(filtered);
+      }
+      if (catData && catData.success && Array.isArray(catData.categories)) {
+        setCategories(catData.categories);
+      } else {
+        setCategories([{ _id: 'cat-lotions', name: 'Body Lotions', slug: 'lotions' }]);
+      }
+    }).catch(() => {
+      setProducts(FALLBACK_PRODUCTS);
+    }).finally(() => setIsLoading(false));
   }, [selectedCategory, selectedSort, searchTerm]);
 
   const handleCategoryChange = (slug) => {

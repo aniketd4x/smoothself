@@ -36,7 +36,10 @@ export const AppProvider = ({ children }) => {
   const [cart, setCart] = useState(() => {
     try {
       const saved = localStorage.getItem('ab_cart');
-      return saved ? JSON.parse(saved) : [];
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(item => item && item.key && Number(item.price) > 0);
     } catch {
       return [];
     }
@@ -46,7 +49,8 @@ export const AppProvider = ({ children }) => {
   const [wishlist, setWishlist] = useState(() => {
     try {
       const saved = localStorage.getItem('ab_wishlist');
-      return saved ? JSON.parse(saved) : [];
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
     }
@@ -109,50 +113,65 @@ export const AppProvider = ({ children }) => {
 
   // Cart Functions
   const addToCart = (product, quantity = 1, variant = null) => {
-    setCart(prevCart => {
-      const variantTitle = variant?.title || (product.variants?.[0]?.options?.[0]?.title) || 'Standard';
-      const variantPrice = variant?.price || product.price;
-      const itemKey = `${product._id}-${variantTitle}`;
+    if (!product) return;
+    const qty = Number(quantity) > 0 ? Number(quantity) : 1;
+    const prodId = product._id || product.id || product.slug || 'prod-item';
+    const prodName = product.name || 'SmoothSelf Lotion';
+    const prodPrice = Number(variant?.price || product.price || 249);
+    const prodComparePrice = Number(variant?.compareAtPrice || product.compareAtPrice || 299);
+    const variantTitle = variant?.title || (product.variants?.[0]?.options?.[0]?.title) || 'Standard';
+    const itemKey = `${prodId}-${variantTitle}`;
+    const prodImage = product.images?.[0] || product.image || '/logo.webp';
 
-      const existingIndex = prevCart.findIndex(item => item.key === itemKey);
+    setCart(prevCart => {
+      const safeCart = Array.isArray(prevCart) ? [...prevCart] : [];
+      const existingIndex = safeCart.findIndex(item => item && item.key === itemKey);
 
       if (existingIndex > -1) {
-        const updated = [...prevCart];
-        updated[existingIndex].quantity += quantity;
-        return updated;
+        safeCart[existingIndex] = {
+          ...safeCart[existingIndex],
+          quantity: (Number(safeCart[existingIndex].quantity) || 0) + qty
+        };
+        return safeCart;
       } else {
         const newItem = {
           key: itemKey,
-          productId: product._id,
-          name: product.name,
-          slug: product.slug,
-          image: product.images?.[0] || '',
-          price: variantPrice,
-          compareAtPrice: variant?.compareAtPrice || product.compareAtPrice || 0,
-          quantity,
+          productId: prodId,
+          name: prodName,
+          slug: product.slug || '',
+          image: prodImage,
+          price: prodPrice,
+          compareAtPrice: prodComparePrice,
+          quantity: qty,
           variantTitle,
-          maxStock: variant?.stock ?? product.stock ?? 99
+          maxStock: Number(variant?.stock ?? product.stock ?? 99)
         };
-        return [...prevCart, newItem];
+        return [...safeCart, newItem];
       }
     });
 
-    showToast(`Added "${product.name.slice(0, 30)}..." to your bag!`);
+    showToast(`Added "${prodName.slice(0, 30)}" to your bag!`);
     setIsCartOpen(true);
   };
 
   const updateCartQuantity = (key, delta) => {
-    setCart(prev => prev.map(item => {
-      if (item.key === key) {
-        const newQty = item.quantity + delta;
-        return newQty > 0 ? { ...item, quantity: newQty } : null;
-      }
-      return item;
-    }).filter(Boolean));
+    setCart(prev => {
+      const safeCart = Array.isArray(prev) ? prev : [];
+      return safeCart.map(item => {
+        if (item && item.key === key) {
+          const newQty = (Number(item.quantity) || 0) + delta;
+          return newQty > 0 ? { ...item, quantity: newQty } : null;
+        }
+        return item;
+      }).filter(Boolean);
+    });
   };
 
   const removeFromCart = (key) => {
-    setCart(prev => prev.filter(item => item.key !== key));
+    setCart(prev => {
+      const safeCart = Array.isArray(prev) ? prev : [];
+      return safeCart.filter(item => item && item.key !== key);
+    });
     showToast('Item removed from cart', 'info');
   };
 
@@ -161,9 +180,10 @@ export const AppProvider = ({ children }) => {
     setAppliedCoupon(null);
   };
 
-  // Calculations
-  const cartSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  // Calculations (Robust against NaNs and undefined)
+  const safeCart = Array.isArray(cart) ? cart.filter(Boolean) : [];
+  const cartSubtotal = safeCart.reduce((sum, item) => sum + (Number(item?.price || 0) * (Number(item?.quantity) || 1)), 0);
+  const cartItemCount = safeCart.reduce((sum, item) => sum + (Number(item?.quantity) || 1), 0);
 
   // Free shipping progress
   const freeShippingThreshold = settings.freeShippingThreshold || 450;
