@@ -47,8 +47,9 @@ const AdminCategories = () => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const isEdit = activeModal !== 'create' && activeModal?._id;
-      const url = isEdit ? `/api/categories/${activeModal._id}` : '/api/categories';
+      const editId = activeModal !== 'create' ? (activeModal?._id || activeModal?.id) : null;
+      const isEdit = Boolean(editId);
+      const url = isEdit ? `/api/categories/${editId}` : '/api/categories';
       const method = isEdit ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -84,7 +85,7 @@ const AdminCategories = () => {
       const data = await res.json();
       if (data.success) {
         showToast('Category deleted');
-        setCategories(prev => prev.filter(c => c._id !== id));
+        setCategories(prev => prev.filter(c => (c._id || c.id) !== id));
       }
     } catch {
       showToast('Error deleting category', 'error');
@@ -114,7 +115,7 @@ const AdminCategories = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories.map((cat) => (
-          <div key={cat._id} className="bg-white rounded-2xl border border-brand-border overflow-hidden shadow-sm flex flex-col justify-between">
+          <div key={cat._id || cat.id} className="bg-white rounded-2xl border border-brand-border overflow-hidden shadow-sm flex flex-col justify-between">
             <div>
               <div className="h-40 bg-brand-surface overflow-hidden relative">
                 <img src={cat.image || 'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=800&auto=format&fit=crop'} alt="" className="w-full h-full object-cover" />
@@ -137,7 +138,7 @@ const AdminCategories = () => {
                 <button onClick={() => openEditModal(cat)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded">
                   <Edit2 size={15} />
                 </button>
-                <button onClick={() => handleDelete(cat._id, cat.name)} className="p-1.5 text-red-500 hover:bg-red-50 rounded">
+                <button onClick={() => handleDelete(cat._id || cat.id, cat.name)} className="p-1.5 text-red-500 hover:bg-red-50 rounded">
                   <Trash2 size={15} />
                 </button>
               </div>

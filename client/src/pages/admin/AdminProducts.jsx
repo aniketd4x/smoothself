@@ -46,7 +46,7 @@ const AdminProducts = () => {
       if (catData.success) {
         setCategories(catData.categories);
         if (catData.categories.length > 0 && !formData.category) {
-          setFormData(prev => ({ ...prev, category: catData.categories[0]._id }));
+          setFormData(prev => ({ ...prev, category: (catData.categories[0]._id || catData.categories[0].id) }));
         }
       }
     }).catch(console.error).finally(() => setIsLoading(false));
@@ -59,7 +59,7 @@ const AdminProducts = () => {
   const openCreateModal = () => {
     setFormData({
       name: '',
-      category: categories[0]?._id || '',
+      category: (categories[0]?._id || categories[0]?.id || ''),
       price: 249,
       compareAtPrice: 299,
       costPrice: 90,
@@ -83,7 +83,7 @@ const AdminProducts = () => {
   const openEditModal = (product) => {
     setFormData({
       ...product,
-      category: product.category?._id || product.category,
+      category: (product.category?._id || product.category?.id || product.category_id || product.category),
       images: Array.isArray(product.images) ? [...product.images] : (product.images ? [product.images] : []),
       badges: Array.isArray(product.badges) ? product.badges.join(', ') : product.badges
     });
@@ -164,8 +164,9 @@ const AdminProducts = () => {
     };
 
     try {
-      const isEdit = activeModal !== 'create' && activeModal?._id;
-      const url = isEdit ? `/api/products/${activeModal._id}` : '/api/products';
+      const editId = activeModal !== 'create' ? (activeModal?._id || activeModal?.id) : null;
+      const isEdit = Boolean(editId);
+      const url = isEdit ? `/api/products/${editId}` : '/api/products';
       const method = isEdit ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -194,7 +195,7 @@ const AdminProducts = () => {
 
   const confirmDeleteProduct = async () => {
     if (!deleteTarget) return;
-    const productId = deleteTarget._id || deleteTarget.slug;
+    const productId = deleteTarget._id || deleteTarget.id || deleteTarget.slug;
     setIsDeleting(true);
 
     try {
@@ -211,7 +212,7 @@ const AdminProducts = () => {
 
       if (res.ok && resData && resData.success) {
         showToast(`"${deleteTarget.name}" deleted successfully!`);
-        setProducts(prev => prev.filter(p => p._id !== deleteTarget._id && p.slug !== deleteTarget.slug));
+        setProducts(prev => prev.filter(p => (p._id || p.id) !== (deleteTarget._id || deleteTarget.id) && p.slug !== deleteTarget.slug));
         setDeleteTarget(null);
         fetchProductsAndCategories();
       } else {
@@ -237,7 +238,7 @@ const AdminProducts = () => {
       });
       const resData = await res.json();
       if (resData.success) {
-        setProducts(prev => prev.map(p => p._id === productId ? { ...p, stock: newStock } : p));
+        setProducts(prev => prev.map(p => (p._id || p.id) === productId ? { ...p, stock: newStock } : p));
       }
     } catch {
       showToast('Failed to update stock', 'error');
@@ -300,7 +301,7 @@ const AdminProducts = () => {
             </thead>
             <tbody className="divide-y divide-brand-border/60">
               {filteredProducts.map(p => (
-                <tr key={p._id} className="hover:bg-brand-surface/40 transition">
+                <tr key={p._id || p.id} className="hover:bg-brand-surface/40 transition">
                   <td className="p-4">
                     <div className="flex items-center space-x-3">
                       <img
@@ -333,7 +334,7 @@ const AdminProducts = () => {
                         {p.stock} in stock
                       </span>
                       <button
-                        onClick={() => handleQuickStockUpdate(p._id, p.stock, 10)}
+                        onClick={() => handleQuickStockUpdate(p._id || p.id, p.stock, 10)}
                         className="text-[10px] text-brand-primary bg-brand-surface hover:bg-brand-border px-1.5 py-0.5 rounded font-bold"
                         title="Add +10 units"
                       >
@@ -422,7 +423,7 @@ const AdminProducts = () => {
                       className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs font-medium"
                     >
                       {categories.map(c => (
-                        <option key={c._id} value={c._id}>{c.name}</option>
+                        <option key={c._id || c.id} value={c._id || c.id}>{c.name}</option>
                       ))}
                     </select>
                   </div>

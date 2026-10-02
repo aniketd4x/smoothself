@@ -68,7 +68,7 @@ const AdminCoupons = () => {
       const data = await res.json();
       if (data.success) {
         showToast('Coupon removed');
-        setCoupons(prev => prev.filter(c => c._id !== id));
+        setCoupons(prev => prev.filter(c => (c._id || c.id) !== id));
       }
     } catch {
       showToast('Error deleting coupon', 'error');
@@ -112,7 +112,7 @@ const AdminCoupons = () => {
             </thead>
             <tbody className="divide-y divide-brand-border/60">
               {coupons.map((c) => (
-                <tr key={c._id} className="hover:bg-brand-surface/40 transition">
+                <tr key={c._id || c.id} className="hover:bg-brand-surface/40 transition">
                   <td className="p-4 font-mono font-bold text-brand-primary text-sm">
                     {c.code}
                     <span className="block text-[11px] font-sans font-normal text-brand-muted">{c.description}</span>
@@ -134,7 +134,7 @@ const AdminCoupons = () => {
                   </td>
                   <td className="p-4 text-right">
                     <button
-                      onClick={() => handleDelete(c._id, c.code)}
+                      onClick={() => handleDelete(c._id || c.id, c.code)}
                       className="p-1.5 text-red-500 hover:bg-red-50 rounded transition"
                     >
                       <Trash2 size={15} />
