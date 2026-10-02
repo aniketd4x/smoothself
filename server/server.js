@@ -6,7 +6,7 @@ const compression = require('compression');
 const path = require('path');
 const connectDB = require('./config/db');
 
-// Connect to MongoDB Database
+// Disconnected MongoDB; initialize Supabase connection
 connectDB();
 
 const app = express();

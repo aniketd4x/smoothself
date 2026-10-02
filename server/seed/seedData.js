@@ -1,126 +1,147 @@
 require('dotenv').config();
-const mongoose = require('mongoose');
-const User = require('../models/User');
-const Category = require('../models/Category');
-const Product = require('../models/Product');
-const Coupon = require('../models/Coupon');
-const Review = require('../models/Review');
-const Banner = require('../models/Banner');
-const BlogPost = require('../models/BlogPost');
-const FAQ = require('../models/FAQ');
-const Setting = require('../models/Setting');
-const connectDB = require('../config/db');
+const bcrypt = require('bcryptjs');
+const { getSupabase, initSupabase } = require('../config/supabase');
 
 const seedAll = async () => {
   try {
-    const isConnected = await connectDB();
-    if (!isConnected || mongoose.connection.readyState !== 1) {
-      console.log('\n⚠️  MongoDB Atlas is not reachable yet from your current IP.');
-      console.log('👉 Please go to https://cloud.mongodb.com/ -> Network Access -> Add IP Address: 0.0.0.0/0');
-      console.log('👉 Click Confirm, wait ~30 seconds, then re-run: npm run seed\n');
-      console.log('✅ The store is currently running with 100% functionality on the local high-availability database.\n');
-      process.exit(0);
+    console.log('🌱 Starting SmoothSelf database seed on Supabase...');
+
+    const supabase = initSupabase() || getSupabase();
+    if (!supabase) {
+      console.error('❌ Supabase client could not be initialized. Please check your .env credentials.');
+      process.exit(1);
     }
-    console.log('Seeding Aura Botanica Database on MongoDB Atlas...');
 
-    // Clear existing data
-    await User.deleteMany();
-    await Category.deleteMany();
-    await Product.deleteMany();
-    await Coupon.deleteMany();
-    await Review.deleteMany();
-    await Banner.deleteMany();
-    await BlogPost.deleteMany();
-    await FAQ.deleteMany();
-    await Setting.deleteMany();
+    console.log('🔗 Connected to Supabase:', process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL);
 
-    // 1. Create Users
-    const admin = await User.create({
-      name: 'Store Administrator',
-      email: 'admin@aurabotanica.com',
-      password: 'admin123456',
-      role: 'admin',
-      phone: '+91 98765 00000'
-    });
+    // 1. Clear existing data
+    console.log('🧹 Clearing existing data in Supabase tables...');
+    await supabase.from('reviews').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('products').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('categories').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('coupons').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('users').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('settings').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
-    const demoCustomer = await User.create({
-      name: 'Ananya Deshmukh',
-      email: 'customer@aurabotanica.com',
-      password: 'customer123456',
-      role: 'customer',
-      phone: '+91 98200 12345',
-      addresses: [{
+    // 2. Seed Users
+    console.log('👤 Seeding Users...');
+    const hashedAdminPassword = await bcrypt.hash('admin123456', 10);
+    const hashedCustomerPassword = await bcrypt.hash('customer123456', 10);
+
+    const { data: users, error: usersErr } = await supabase.from('users').insert([
+      {
+        name: 'Store Administrator',
+        email: 'admin@aurabotanica.com',
+        password: hashedAdminPassword,
+        phone: '+91 98765 00000',
+        role: 'admin',
+        addresses: [],
+        wishlist: [],
+        is_active: true
+      },
+      {
         name: 'Ananya Deshmukh',
+        email: 'customer@aurabotanica.com',
+        password: hashedCustomerPassword,
         phone: '+91 98200 12345',
-        street: '402, Highgrove Apartments, Indiranagar',
-        apartment: 'Block B, 4th Floor',
-        city: 'Bengaluru',
-        state: 'Karnataka',
-        postalCode: '560038',
-        country: 'India',
-        isDefault: true
-      }]
-    });
+        role: 'customer',
+        addresses: [{
+          name: 'Ananya Deshmukh',
+          phone: '+91 98200 12345',
+          street: '402, Highgrove Apartments, Indiranagar',
+          apartment: 'Block B, 4th Floor',
+          city: 'Bengaluru',
+          state: 'Karnataka',
+          postalCode: '560038',
+          country: 'India',
+          isDefault: true
+        }],
+        wishlist: [],
+        is_active: true
+      },
+      {
+        name: 'SmoothSelf Member',
+        email: 'customer@smoothself.in',
+        password: hashedCustomerPassword,
+        phone: '+91 99604 42750',
+        role: 'customer',
+        addresses: [],
+        wishlist: [],
+        is_active: true
+      }
+    ]).select();
 
-    console.log('Users created: Admin (admin@aurabotanica.com / admin123456)');
+    if (usersErr) throw new Error(`Users seed failed: ${usersErr.message}`);
+    console.log(`✅ ${users.length} Users created (Admin: admin@aurabotanica.com / admin123456)`);
 
-    // 2. Create Categories
-    const catLotion = await Category.create({
-      name: 'Body Lotions & Milks',
-      slug: 'body-lotions',
-      description: 'Silky lightweight emulsions formulated for 24-hour hydration without heaviness.',
-      image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=800&auto=format&fit=crop',
-      order: 1
-    });
+    // 3. Seed Categories
+    console.log('📂 Seeding Categories...');
+    const { data: categories, error: catErr } = await supabase.from('categories').insert([
+      {
+        name: 'Body Lotions & Milks',
+        slug: 'body-lotions',
+        description: 'Silky lightweight emulsions formulated for 24-hour hydration without heaviness.',
+        image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=800&auto=format&fit=crop',
+        display_order: 1,
+        is_active: true
+      },
+      {
+        name: 'Whipped Body Butters',
+        slug: 'body-butters',
+        description: 'Rich, comforting balms and whipped shea soufflés for deep barrier repair.',
+        image: 'https://images.unsplash.com/photo-1608248597359-5980a3c2ce52?q=80&w=800&auto=format&fit=crop',
+        display_order: 2,
+        is_active: true
+      },
+      {
+        name: 'Exfoliating Scrubs',
+        slug: 'exfoliating-scrubs',
+        description: 'Botanical sugar and coffee polishes to renew skin texture and reveal baby softness.',
+        image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=800&auto=format&fit=crop',
+        display_order: 3,
+        is_active: true
+      },
+      {
+        name: 'Elixirs & Body Oils',
+        slug: 'body-oils',
+        description: 'Dry body oils and illuminating essences that seal in moisture with a satin sheen.',
+        image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=800&auto=format&fit=crop',
+        display_order: 4,
+        is_active: true
+      }
+    ]).select();
 
-    const catButter = await Category.create({
-      name: 'Whipped Body Butters',
-      slug: 'body-butters',
-      description: 'Rich, comforting balms and whipped shea soufflés for deep barrier repair.',
-      image: 'https://images.unsplash.com/photo-1608248597359-5980a3c2ce52?q=80&w=800&auto=format&fit=crop',
-      order: 2
-    });
+    if (catErr) throw new Error(`Categories seed failed: ${catErr.message}`);
+    console.log(`✅ ${categories.length} Categories created`);
 
-    const catScrubs = await Category.create({
-      name: 'Exfoliating Scrubs',
-      slug: 'exfoliating-scrubs',
-      description: 'Botanical sugar and coffee polishes to renew skin texture and reveal baby softness.',
-      image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=800&auto=format&fit=crop',
-      order: 3
-    });
+    const catLotions = categories.find(c => c.slug === 'body-lotions') || categories[0];
+    const catButters = categories.find(c => c.slug === 'body-butters') || categories[1];
+    const catScrubs = categories.find(c => c.slug === 'exfoliating-scrubs') || categories[2];
+    const catOils = categories.find(c => c.slug === 'body-oils') || categories[3];
 
-    const catOils = await Category.create({
-      name: 'Elixirs & Body Oils',
-      slug: 'body-oils',
-      description: 'Dry body oils and illuminating essences that seal in moisture with a satin sheen.',
-      image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=800&auto=format&fit=crop',
-      order: 4
-    });
-
-    console.log('Categories created');
-
-    // 3. Create Products
+    // 4. Seed Products
+    console.log('🛍️ Seeding Products...');
     const productsData = [
       {
         name: 'Velvet Vanilla & Vitamin E Restorative Body Lotion — 200ml',
         slug: 'velvet-vanilla-vitamin-e-body-lotion',
-        category: catLotion._id,
-        categoryName: catLotion.name,
-        shortDescription: 'Indulge your skin in luxurious, non-greasy hydration infused with Madagascar Vanilla and Vitamin E.',
+        category_id: catLotions.id,
+        category_name: catLotions.name,
+        short_description: 'Indulge your skin in luxurious, non-greasy hydration infused with Madagascar Vanilla and Vitamin E.',
         description: 'Our signature formulation combines cold-pressed sweet almond oil, pure Madagascar vanilla bean extract, and micronized Vitamin E to deeply hydrate, soothe dryness, and leave behind a warm, comforting scent that lingers for over 12 hours. Absorbs in seconds without any sticky residue.',
         ingredients: 'Aqua, Prunus Amygdalus Dulcis (Sweet Almond) Oil, Glycerin, Caprylic/Capric Triglyceride, Cetearyl Alcohol, Tocopheryl Acetate (Vitamin E), Vanilla Planifolia Fruit Extract, Butyrospermum Parkii (Shea Butter), Sodium Hyaluronate, Phenoxyethanol, Ethylhexylglycerin, Fragrance (Natural Vanilla Pods).',
-        howToUse: 'Smooth generously over cleansed skin after showering or whenever skin needs intense moisture. Pay special attention to dry areas like elbows, knees, and ankles.',
+        how_to_use: 'Smooth generously over cleansed skin after showering or whenever skin needs intense moisture. Pay special attention to dry areas like elbows, knees, and ankles.',
         benefits: [
           { title: '24-Hour Deep Hydration', description: 'Locks moisture into cellular layers for supple, plumping softness all day long.' },
           { title: 'Vitamin E Protection', description: 'Shields skin against environmental oxidative damage and free-radical stress.' },
           { title: 'Velvety Fast Absorption', description: 'Zero stickiness, absorbs instantly so you can dress immediately.' }
         ],
         price: 249,
-        compareAtPrice: 299,
-        costPrice: 90,
+        compare_at_price: 299,
+        cost_price: 90,
         sku: 'AB-LOT-VAN-200',
         stock: 145,
-        lowStockThreshold: 15,
+        low_stock_threshold: 15,
         images: [
           'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=1000&auto=format&fit=crop',
           'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=1000&auto=format&fit=crop',
@@ -137,30 +158,33 @@ const seedAll = async () => {
         ],
         badges: ['BESTSELLER', 'HOT', '-17%'],
         rating: 4.9,
-        numReviews: 48,
-        isFeatured: true,
+        num_reviews: 48,
+        is_featured: true,
+        is_active: true,
         tags: ['Vanilla', 'Vitamin E', 'Body Lotion', 'Moisturizer', 'Hydration', 'Bestseller'],
-        weight: '200ml'
+        weight: '200ml',
+        seo_title: 'Velvet Vanilla & Vitamin E Restorative Body Lotion',
+        seo_description: 'Indulge your skin in luxurious, non-greasy hydration infused with Madagascar Vanilla and Vitamin E.'
       },
       {
         name: 'Wild Strawberry & Bio-Retinol Glow Body Soufflé — 200ml',
         slug: 'wild-strawberry-bio-retinol-glow-souffle',
-        category: catLotion._id,
-        categoryName: catLotion.name,
-        shortDescription: 'Whipped cloud-like soufflé that brightens, tones, and drenches skin in juicy berry hydration.',
+        category_id: catLotions.id,
+        category_name: catLotions.name,
+        short_description: 'Whipped cloud-like soufflé that brightens, tones, and drenches skin in juicy berry hydration.',
         description: 'Formulated with cold-pressed alpine strawberry seed oil, botanical bakuchiol (plant retinol), and multi-weight hyaluronic acid. Gently encourages cellular turnover while smoothing bumpy texture for glowing, silky-smooth skin.',
         ingredients: 'Aqua, Fragaria Ananassa (Strawberry) Seed Oil, Bakuchiol, Niacinamide (Vitamin B3), Squalane, Butyrospermum Parkii, Glyceryl Stearate, Allantoin, Natural Berry Aroma.',
-        howToUse: 'Gently massage onto arms, legs, and body in upward strokes until fully absorbed. Suitable for everyday morning and evening use.',
+        how_to_use: 'Gently massage onto arms, legs, and body in upward strokes until fully absorbed. Suitable for everyday morning and evening use.',
         benefits: [
           { title: 'Texture Smoothing', description: 'Bio-retinol helps reduce roughness and strawberry skin bumps.' },
           { title: 'Juicy Radiant Finish', description: 'Infuses natural antioxidants for a dewy, glowing finish.' }
         ],
         price: 269,
-        compareAtPrice: 329,
-        costPrice: 95,
+        compare_at_price: 329,
+        cost_price: 95,
         sku: 'AB-LOT-STR-200',
         stock: 84,
-        lowStockThreshold: 12,
+        low_stock_threshold: 12,
         images: [
           'https://images.unsplash.com/photo-1608248597359-5980a3c2ce52?q=80&w=1000&auto=format&fit=crop',
           'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=1000&auto=format&fit=crop'
@@ -176,30 +200,33 @@ const seedAll = async () => {
         ],
         badges: ['NEW', '-18%'],
         rating: 4.8,
-        numReviews: 29,
-        isFeatured: true,
+        num_reviews: 29,
+        is_featured: true,
+        is_active: true,
         tags: ['Strawberry', 'Glow', 'Bakuchiol', 'Body Souffle', 'Body Lotion'],
-        weight: '200ml'
+        weight: '200ml',
+        seo_title: 'Wild Strawberry & Bio-Retinol Glow Body Soufflé',
+        seo_description: 'Whipped cloud-like soufflé that brightens, tones, and drenches skin in juicy berry hydration.'
       },
       {
         name: 'Golden Honeycomb & Ghanaian Shea Intensive Body Butter — 200g',
         slug: 'golden-honeycomb-shea-body-butter',
-        category: catButter._id,
-        categoryName: catButter.name,
-        shortDescription: 'Ultra-nourishing melted butter infused with wild honey, cocoa butter, and raw shea.',
+        category_id: catButters.id,
+        category_name: catButters.name,
+        short_description: 'Ultra-nourishing melted butter infused with wild honey, cocoa butter, and raw shea.',
         description: 'For parched or stressed skin in need of restorative comfort. Our artisanal whipped butter forms a breathable protective blanket that seals in moisture for 48 hours without feeling occlusive or sticky.',
         ingredients: 'Butyrospermum Parkii (Shea Butter), Theobroma Cacao (Cocoa) Seed Butter, Mel (Wild Honey Extract), Simmondsia Chinensis (Jojoba) Oil, Helianthus Annuus Seed Oil, Tocopherol, Honey Scent.',
-        howToUse: 'Warm a small amount between your palms and massage into warm skin post-bath.',
+        how_to_use: 'Warm a small amount between your palms and massage into warm skin post-bath.',
         benefits: [
           { title: '48-Hour Barrier Shield', description: 'Intensive plant lipids replenish the lipid barrier.' },
           { title: 'Dry Flake Reliever', description: 'Instant comfort for dry elbows, cracked heels, and tight skin.' }
         ],
         price: 349,
-        compareAtPrice: 449,
-        costPrice: 120,
+        compare_at_price: 449,
+        cost_price: 120,
         sku: 'AB-BUT-HON-200',
         stock: 62,
-        lowStockThreshold: 10,
+        low_stock_threshold: 10,
         images: [
           'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=1000&auto=format&fit=crop',
           'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=1000&auto=format&fit=crop'
@@ -215,30 +242,33 @@ const seedAll = async () => {
         ],
         badges: ['BESTSELLER', '-22%'],
         rating: 5.0,
-        numReviews: 34,
-        isFeatured: true,
+        num_reviews: 34,
+        is_featured: true,
+        is_active: true,
         tags: ['Honey', 'Shea Butter', 'Dry Skin', 'Intensive Care'],
-        weight: '200g'
+        weight: '200g',
+        seo_title: 'Golden Honeycomb & Ghanaian Shea Intensive Body Butter',
+        seo_description: 'Ultra-nourishing melted butter infused with wild honey, cocoa butter, and raw shea.'
       },
       {
         name: 'French Lavender & Roman Chamomile Midnight Rest Body Milk — 200ml',
         slug: 'french-lavender-chamomile-midnight-body-milk',
-        category: catLotion._id,
-        categoryName: catLotion.name,
-        shortDescription: 'Therapeutic sleep-inducing aroma paired with calming botanical hydration.',
+        category_id: catLotions.id,
+        category_name: catLotions.name,
+        short_description: 'Therapeutic sleep-inducing aroma paired with calming botanical hydration.',
         description: 'Unwind your evening with pure Provence lavender, Roman chamomile, and soothing oat milk. Formulated to calm nighttime restlessness while deeply replenishing the skin during its natural nocturnal repair cycle.',
         ingredients: 'Aqua, Avena Sativa (Oat) Kernel Extract, Lavandula Angustifolia Oil, Anthemis Nobilis (Chamomile) Flower Oil, Squalane, Cetyl Alcohol, Tocopheryl Acetate.',
-        howToUse: 'Apply right before bedtime with slow, sweeping strokes over shoulders, chest, and arms. Inhale the relaxing botanicals deeply.',
+        how_to_use: 'Apply right before bedtime with slow, sweeping strokes over shoulders, chest, and arms. Inhale the relaxing botanicals deeply.',
         benefits: [
           { title: 'Aromatherapeutic Relaxation', description: 'Calms mind and senses for better sleep quality.' },
           { title: 'Nocturnal Skin Repair', description: 'Supports cell regeneration throughout the night.' }
         ],
         price: 259,
-        compareAtPrice: 319,
-        costPrice: 90,
+        compare_at_price: 319,
+        cost_price: 90,
         sku: 'AB-LOT-LAV-200',
         stock: 95,
-        lowStockThreshold: 10,
+        low_stock_threshold: 10,
         images: [
           'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=1000&auto=format&fit=crop',
           'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=1000&auto=format&fit=crop'
@@ -254,30 +284,33 @@ const seedAll = async () => {
         ],
         badges: ['POPULAR'],
         rating: 4.9,
-        numReviews: 22,
-        isFeatured: false,
+        num_reviews: 22,
+        is_featured: false,
+        is_active: true,
         tags: ['Lavender', 'Chamomile', 'Sleep', 'Night Care'],
-        weight: '200ml'
+        weight: '200ml',
+        seo_title: 'French Lavender & Roman Chamomile Midnight Rest Body Milk',
+        seo_description: 'Therapeutic sleep-inducing aroma paired with calming botanical hydration.'
       },
       {
         name: 'Arabica Roast & Brown Demerara Smoothing Body Polish — 250g',
         slug: 'arabica-roast-brown-sugar-body-polish',
-        category: catScrubs._id,
-        categoryName: catScrubs.name,
-        shortDescription: 'Caffeine-rich antioxidant scrub that buffs away dead skin cells and boosts micro-circulation.',
+        category_id: catScrubs.id,
+        category_name: catScrubs.name,
+        short_description: 'Caffeine-rich antioxidant scrub that buffs away dead skin cells and boosts micro-circulation.',
         description: 'Finely ground ethically sourced Arabica beans suspended in rich almond and coconut oils with golden brown Demerara sugar crystals. Buffs away dry dead skin, awakens dull limbs, and leaves a silky veil of moisture.',
         ingredients: 'Sucrose (Demerara Brown Sugar), Coffea Arabica Seed Powder, Cocos Nucifera (Coconut) Oil, Prunus Amygdalus Dulcis Oil, Vanilla Extract, Sea Salt, Tocopherol.',
-        howToUse: 'In the shower, massage onto wet skin using circular motions. Rinse thoroughly with warm water. Use 2 to 3 times per week.',
+        how_to_use: 'In the shower, massage onto wet skin using circular motions. Rinse thoroughly with warm water. Use 2 to 3 times per week.',
         benefits: [
           { title: 'Instant Softness', description: 'Removes dull surface cells in single application.' },
           { title: 'Energizing Circulation', description: 'Caffeine invigorates skin surface for firmer feel.' }
         ],
         price: 329,
-        compareAtPrice: 429,
-        costPrice: 110,
+        compare_at_price: 429,
+        cost_price: 110,
         sku: 'AB-SCR-COF-250',
         stock: 58,
-        lowStockThreshold: 10,
+        low_stock_threshold: 10,
         images: [
           'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=1000&auto=format&fit=crop',
           'https://images.unsplash.com/photo-1608248597359-5980a3c2ce52?q=80&w=1000&auto=format&fit=crop'
@@ -292,30 +325,33 @@ const seedAll = async () => {
         ],
         badges: ['HOT', '-23%'],
         rating: 4.8,
-        numReviews: 19,
-        isFeatured: false,
+        num_reviews: 19,
+        is_featured: false,
+        is_active: true,
         tags: ['Coffee', 'Scrub', 'Exfoliation', 'Body Polish'],
-        weight: '250g'
+        weight: '250g',
+        seo_title: 'Arabica Roast & Brown Demerara Smoothing Body Polish',
+        seo_description: 'Caffeine-rich antioxidant scrub that buffs away dead skin cells and boosts micro-circulation.'
       },
       {
         name: 'Neroli Blossom & Mediterranean Squalane Illuminating Body Oil — 100ml',
         slug: 'neroli-blossom-squalane-illuminating-body-oil',
-        category: catOils._id,
-        categoryName: catOils.name,
-        shortDescription: 'Golden dry elixir that absorbs instantly for high-gloss, luminous, perfumed skin.',
+        category_id: catOils.id,
+        category_name: catOils.name,
+        short_description: 'Golden dry elixir that absorbs instantly for high-gloss, luminous, perfumed skin.',
         description: 'An ethereal multi-use body nectar blending 100% plant-derived squalane, camellia seed oil, and precious orange blossom neroli essence. Gives the skin a radiant, non-oily lit-from-within glow.',
         ingredients: 'Squalane (Olive Derived), Camellia Oleifera Seed Oil, Citrus Aurantium (Neroli) Flower Oil, Simmondsia Chinensis Seed Oil, Helianthus Annuus Seed Oil, Rosa Damascena Flower Extract, Tocopherol.',
-        howToUse: 'Mist or drop into palms and smooth over damp skin after bathing. Can also be applied to collarbones, shoulders, and legs for an instant luminous highlight.',
+        how_to_use: 'Mist or drop into palms and smooth over damp skin after bathing. Can also be applied to collarbones, shoulders, and legs for an instant luminous highlight.',
         benefits: [
           { title: 'Non-Greasy Satin Finish', description: 'Featherlight botanical oils that absorb in 30 seconds.' },
           { title: 'Luminous Glow', description: 'Reflects ambient light for healthy, glowing skin.' }
         ],
         price: 499,
-        compareAtPrice: 649,
-        costPrice: 160,
+        compare_at_price: 649,
+        cost_price: 160,
         sku: 'AB-OIL-NER-100',
         stock: 40,
-        lowStockThreshold: 8,
+        low_stock_threshold: 8,
         images: [
           'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=1000&auto=format&fit=crop',
           'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=1000&auto=format&fit=crop'
@@ -330,218 +366,125 @@ const seedAll = async () => {
         ],
         badges: ['NEW', 'LUXURY'],
         rating: 5.0,
-        numReviews: 14,
-        isFeatured: true,
+        num_reviews: 14,
+        is_featured: true,
+        is_active: true,
         tags: ['Body Oil', 'Neroli', 'Glow', 'Squalane'],
-        weight: '100ml'
+        weight: '100ml',
+        seo_title: 'Neroli Blossom & Mediterranean Squalane Illuminating Body Oil',
+        seo_description: 'Golden dry elixir that absorbs instantly for high-gloss, luminous, perfumed skin.'
       }
     ];
 
-    const createdProducts = await Product.insertMany(productsData);
-    console.log(`Products created (${createdProducts.length} items)`);
+    const { data: createdProducts, error: prodErr } = await supabase.from('products').insert(productsData).select();
+    if (prodErr) throw new Error(`Products seed failed: ${prodErr.message}`);
+    console.log(`✅ ${createdProducts.length} Products created`);
 
-    // 4. Create Coupons
-    await Coupon.create([
+    // 5. Seed Coupons
+    console.log('🏷️ Seeding Coupons...');
+    const { data: coupons, error: coupErr } = await supabase.from('coupons').insert([
       {
         code: 'WELCOME10',
-        description: '10% off for all first-time customers',
-        discountType: 'percentage',
-        discountValue: 10,
-        minOrderAmount: 0,
-        maxDiscountAmount: 200,
-        expiryDate: new Date('2028-12-31'),
-        usageLimit: 5000,
-        isActive: true
+        discount_type: 'percentage',
+        discount_value: 10,
+        min_order_amount: 0,
+        max_discount_amount: 200,
+        expiry_date: new Date('2028-12-31').toISOString(),
+        usage_limit: 5000,
+        is_active: true
       },
       {
         code: 'GLOW20',
-        description: '20% off on orders above ₹799',
-        discountType: 'percentage',
-        discountValue: 20,
-        minOrderAmount: 799,
-        maxDiscountAmount: 300,
-        expiryDate: new Date('2028-12-31'),
-        usageLimit: 2000,
-        isActive: true
+        discount_type: 'percentage',
+        discount_value: 20,
+        min_order_amount: 799,
+        max_discount_amount: 300,
+        expiry_date: new Date('2028-12-31').toISOString(),
+        usage_limit: 2000,
+        is_active: true
       },
       {
         code: 'SMOOTH50',
-        description: 'Flat ₹50 off on orders above ₹450',
-        discountType: 'fixed',
-        discountValue: 50,
-        minOrderAmount: 450,
-        maxDiscountAmount: 50,
-        expiryDate: new Date('2028-12-31'),
-        usageLimit: 3000,
-        isActive: true
+        discount_type: 'fixed',
+        discount_value: 50,
+        min_order_amount: 450,
+        max_discount_amount: 50,
+        expiry_date: new Date('2028-12-31').toISOString(),
+        usage_limit: 3000,
+        is_active: true
       }
-    ]);
-    console.log('Coupons created (WELCOME10, GLOW20, SMOOTH50)');
+    ]).select();
 
-    // 5. Create Reviews
-    const vanillaProduct = createdProducts[0];
-    const strawberryProduct = createdProducts[1];
+    if (coupErr) throw new Error(`Coupons seed failed: ${coupErr.message}`);
+    console.log(`✅ ${coupons.length} Coupons created (WELCOME10, GLOW20, SMOOTH50)`);
 
-    await Review.create([
+    // 6. Seed Reviews
+    console.log('⭐ Seeding Reviews...');
+    const vanilla = createdProducts[0];
+    const strawberry = createdProducts[1];
+
+    const { data: reviews, error: revErr } = await supabase.from('reviews').insert([
       {
-        product: vanillaProduct._id,
-        user: demoCustomer._id,
-        userName: 'Priya Sharma',
-        userEmail: 'priya.s@example.com',
+        product_id: vanilla.id,
+        user_name: 'Priya Sharma',
+        user_email: 'priya.s@example.com',
         rating: 5,
         title: 'Silky smooth skin & divine fragrance!',
         comment: 'After using the Vanilla & Vitamin E Body Lotion, my skin feels incredibly soft and moisturized throughout the workday in AC. The fragrance lasts for 8+ hours and feels so luxurious without any sticky residue!',
-        isVerifiedPurchase: true,
-        isApproved: true
+        is_verified_buyer: true,
+        is_approved: true
       },
       {
-        product: vanillaProduct._id,
-        userName: 'Meera Iyer',
-        userEmail: 'meera.i@example.com',
+        product_id: vanilla.id,
+        user_name: 'Meera Iyer',
+        user_email: 'meera.i@example.com',
         rating: 5,
         title: 'Holy grail body lotion',
         comment: 'I have very dry elbows and legs, and this worked wonders within 3 days. Super fast delivery and the packaging is gorgeous. Will definitely repurchase the 400ml jumbo size.',
-        isVerifiedPurchase: true,
-        isApproved: true
+        is_verified_buyer: true,
+        is_approved: true
       },
       {
-        product: strawberryProduct._id,
-        userName: 'Rhea Sen',
-        userEmail: 'rhea.sen@example.com',
+        product_id: strawberry.id,
+        user_name: 'Rhea Sen',
+        user_email: 'rhea.sen@example.com',
         rating: 5,
         title: 'Lightweight & fresh berry scent!',
         comment: 'The strawberry souffle is so lightweight and absorbs in seconds! Love how it leaves my skin glowing without feeling heavy or oily in humid weather.',
-        isVerifiedPurchase: true,
-        isApproved: true
+        is_verified_buyer: true,
+        is_approved: true
       }
-    ]);
-    console.log('Reviews created');
+    ]).select();
 
-    // 6. Create Banners
-    await Banner.create([
+    if (revErr) throw new Error(`Reviews seed failed: ${revErr.message}`);
+    console.log(`✅ ${reviews.length} Reviews created`);
+
+    // 7. Seed Settings
+    console.log('⚙️ Seeding Settings...');
+    const { data: settings, error: settErr } = await supabase.from('settings').insert([
       {
-        title: 'Deep Skin Hydration & Long Lasting Fragrance',
-        subtitle: 'Restorative Botanical Formulations Infused with Vitamin E & Pure Plant Oils',
-        tagline: 'CLEAN BEAUTY • 100% VEGAN • DERMATOLOGICALLY APPROVED',
-        buttonText: 'Shop Bestsellers',
-        buttonLink: '/shop',
-        imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=1600&auto=format&fit=crop',
-        order: 1,
-        isActive: true
-      },
-      {
-        title: 'The Art of Mindful Self-Care',
-        subtitle: 'Experience 48-Hour Silky Barrier Protection with Organic Whipped Butters',
-        tagline: 'PREMIUM ARTISANAL FORMULATIONS',
-        buttonText: 'Explore Body Butters',
-        buttonLink: '/shop?category=body-butters',
-        imageUrl: 'https://images.unsplash.com/photo-1608248597359-5980a3c2ce52?q=80&w=1600&auto=format&fit=crop',
-        order: 2,
-        isActive: true
+        brand_name: 'SMOOTHSELF',
+        logo_url: '/logo.webp',
+        tagline: 'Naturally Silky Smooth',
+        announcement_text: 'Free shipping order above ₹ 450',
+        announcement_active: true,
+        free_shipping_threshold: 450,
+        standard_shipping_fee: 50,
+        express_shipping_fee: 100,
+        contact_email: 'support@smoothself.in',
+        contact_phone: '+91 99604 42750',
+        contact_address: 'Mumbai, Maharashtra',
+        currency_symbol: '₹'
       }
-    ]);
-    console.log('Banners created');
+    ]).select();
 
-    // 7. Create Blog Posts
-    await BlogPost.create([
-      {
-        title: 'Why Vitamin E & Plant Squalane Are the Ultimate Skincare Duo for All-Day Hydration',
-        slug: 'vitamin-e-squalane-all-day-hydration',
-        excerpt: 'Discover how lipid-rich botanicals prevent transepidermal water loss and keep your moisture barrier locked in dry climates.',
-        content: `Maintaining hydrated, healthy skin goes beyond simply drinking water. Your outer skin barrier requires bio-compatible lipids that seal in water molecules.
+    if (settErr) throw new Error(`Settings seed failed: ${settErr.message}`);
+    console.log('✅ Settings created');
 
-### The Problem of Transepidermal Water Loss (TEWL)
-During prolonged exposure to indoor air conditioning, UV rays, or seasonal shifts, your skin loses water rapidly through evaporation. Lightweight humectants like glycerin draw water in, but without an emollient barrier like Vitamin E and Plant Squalane, that hydration evaporates within hours.
-
-### The Power of Cold-Pressed Botanicals
-Cold-pressed sweet almond oil and shea butter provide oleic and linoleic fatty acids that match your skin's natural lipid structure. This allows deep penetration without clogging pores or feeling sticky.`,
-        coverImage: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=800&auto=format&fit=crop',
-        author: 'Dr. Kavita Nair (Lead Formulator)',
-        tags: ['Skincare Science', 'Vitamin E', 'Hydration Guide'],
-        published: true
-      },
-      {
-        title: 'How to Build an Evening Body Ritual for Calmer Sleep and Radiant Morning Skin',
-        slug: 'evening-body-ritual-calm-sleep',
-        excerpt: 'Simple steps to transform your night bath into an aromatherapeutic sanctuary that repairs and replenishes.',
-        content: `Your skin does its heavy-duty cellular repair while you sleep. Combining warm hydrotherapy with lavender botanicals and nutrient-dense body milk creates the optimal conditions for recovery.
-
-1. **Warm Shower or Bath**: Opens pores and relaxes tight shoulder muscles.
-2. **Apply Lotion to Damp Skin**: Locks in three times more moisture than applying to dry skin.
-3. **Inhale Calming Essential Botanicals**: French lavender has been clinically demonstrated to lower heart rates and prepare the body for deep REM sleep.`,
-        coverImage: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=800&auto=format&fit=crop',
-        author: 'Aura Botanica Wellness Team',
-        tags: ['Night Ritual', 'Wellness', 'Aromatherapy'],
-        published: true
-      }
-    ]);
-    console.log('Blog posts created');
-
-    // 8. Create FAQs
-    await FAQ.create([
-      {
-        question: 'Are Aura Botanica products suitable for sensitive skin?',
-        answer: 'Yes! All our formulations are dermatologically tested, pH-balanced (5.5), and free from parabens, mineral oils, phthalates, and harsh synthetic sulfates. If you have extreme sensitivities, we always recommend patch-testing on your inner wrist.',
-        category: 'Products',
-        order: 1
-      },
-      {
-        question: 'Does the body lotion leave a greasy or sticky residue?',
-        answer: 'Not at all. Our signature emulsions are engineered to absorb in under 30 seconds into cellular layers, leaving behind a smooth, silky touch so you can dress immediately without stains.',
-        category: 'Products',
-        order: 2
-      },
-      {
-        question: 'What are your delivery timelines and shipping charges?',
-        answer: 'We provide Free Standard Shipping on all orders over ₹450 across India. For orders below ₹450, standard shipping is ₹50. Orders are dispatched within 24–48 business hours and delivered within 2–5 business days.',
-        category: 'Shipping',
-        order: 3
-      },
-      {
-        question: 'What is your return or replacement policy?',
-        answer: 'We provide a hassle-free 7-day replacement or refund guarantee in the rare case of damaged, defective, or incorrect products received. Contact our customer care team via WhatsApp or email with your order ID.',
-        category: 'Orders',
-        order: 4
-      },
-      {
-        question: 'Do you offer Cash on Delivery (COD)?',
-        answer: 'Yes, Cash on Delivery is available across all serviceable pin codes in India, alongside secure online payments through UPI, Cards, NetBanking, and Wallets.',
-        category: 'Payments',
-        order: 5
-      }
-    ]);
-    console.log('FAQs created');
-
-    // 9. Create Website Settings
-    await Setting.create({
-      brandName: 'SmoothSelf',
-      tagline: '',
-      logoUrl: '',
-      faviconUrl: '',
-      announcementText: 'Free shipping order above ₹ 450',
-      announcementActive: true,
-      freeShippingThreshold: 450,
-      standardShippingFee: 50,
-      expressShippingFee: 100,
-      contactEmail: 'support@smoothself.in',
-      contactPhone: '+91 99604 42750',
-      contactAddress: 'Mumbai, Maharashtra',
-      currency: 'INR',
-      currencySymbol: '₹',
-      primaryColor: '#332d55',
-      secondaryColor: '#9a84c8',
-      accentColor: '#da3f3f',
-      aboutUsTitle: 'The Purest Botanicals. The Softest Skin.',
-      aboutUsText: 'SmoothSelf was created to bring mindfulness and botanical potency to everyday self-care. We craft ultra-nourishing, non-sticky personal care formulas infused with pure vanilla extract, unrefined shea butter, and restorative Vitamin E to reveal velvety soft skin every single day.',
-      newsletterHeading: 'Let’s get in touch',
-      newsletterSubheading: 'Sign up with your email to receive private member discounts, new formulation announcements, and mindful body care tips.'
-    });
-    console.log('Settings created');
-
-    console.log('Seeding completed successfully!');
+    console.log('\n🎉 ALL SUPABASE SEEDING COMPLETED SUCCESSFULLY WITH ZERO ERRORS!');
     process.exit(0);
   } catch (error) {
-    console.error('Seeding failed:', error);
+    console.error('\n❌ Seeding failed:', error.message);
     process.exit(1);
   }
 };
