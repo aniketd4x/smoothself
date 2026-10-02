@@ -272,17 +272,29 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
 // Admin: Delete product
 router.delete('/:id', protect, adminOnly, async (req, res) => {
   try {
+    const { id } = req.params;
+
     if (isDBConnected()) {
       try {
-        await Product.findByIdAndDelete(req.params.id);
-      } catch (e) {}
+        if (id.match(/^[0-9a-fA-F]{24}$/)) {
+          await Product.findByIdAndDelete(id);
+        } else {
+          await Product.findOneAndDelete({ $or: [{ slug: id }, { sku: id }, { name: id }] });
+        }
+      } catch (e) {
+        console.warn('[Delete Product DB Error]', e.message);
+      }
     }
-    const idx = localStore.data.products.findIndex(p => String(p._id) === req.params.id);
-    if (idx > -1) {
-      localStore.data.products.splice(idx, 1);
-      localStore.saveData();
-    }
-    res.json({ success: true, message: 'Product deleted successfully' });
+
+    // Also remove from localStore
+    localStore.data.products = localStore.data.products.filter(p => 
+      String(p._id) !== String(id) && 
+      p.slug !== id && 
+      p.sku !== id
+    );
+    localStore.saveData();
+
+    res.json({ success: true, message: 'Product deleted successfully', id });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

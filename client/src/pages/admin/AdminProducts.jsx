@@ -11,6 +11,8 @@ const AdminProducts = () => {
 
   // Modal State (null = closed, 'create' = new, or product object = editing)
   const [activeModal, setActiveModal] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -190,21 +192,35 @@ const AdminProducts = () => {
     }
   };
 
-  const handleDeleteProduct = async (productId, name) => {
-    if (!window.confirm(`Are you sure you want to permanently delete "${name}"?`)) return;
+  const confirmDeleteProduct = async () => {
+    if (!deleteTarget) return;
+    const productId = deleteTarget._id || deleteTarget.slug;
+    setIsDeleting(true);
 
     try {
       const res = await fetch(`/api/products/${productId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const resData = await res.json();
-      if (resData.success) {
-        showToast('Product deleted successfully');
-        setProducts(prev => prev.filter(p => p._id !== productId));
+      let resData = null;
+      try {
+        resData = await res.json();
+      } catch (e) {
+        resData = { success: false, message: 'Server returned non-JSON response' };
       }
-    } catch {
-      showToast('Error deleting product', 'error');
+
+      if (res.ok && resData && resData.success) {
+        showToast(`"${deleteTarget.name}" deleted successfully!`);
+        setProducts(prev => prev.filter(p => p._id !== deleteTarget._id && p.slug !== deleteTarget.slug));
+        setDeleteTarget(null);
+        fetchProductsAndCategories();
+      } else {
+        showToast(resData?.message || `Failed to delete product (Status ${res.status})`, 'error');
+      }
+    } catch (err) {
+      showToast('Error deleting product: ' + err.message, 'error');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -341,7 +357,7 @@ const AdminProducts = () => {
                       <Edit2 size={15} />
                     </button>
                     <button
-                      onClick={() => handleDeleteProduct(p._id, p.name)}
+                      onClick={() => setDeleteTarget(p)}
                       className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition"
                       title="Delete Product"
                     >
@@ -619,6 +635,55 @@ const AdminProducts = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => !isDeleting && setDeleteTarget(null)}></div>
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-brand-border space-y-4 animate-scale-in">
+              <div className="flex items-center space-x-3 text-red-600">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <Trash2 size={20} />
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg font-bold text-brand-primary">Delete Product Formulation</h3>
+                  <p className="text-xs text-brand-muted">This action will remove the product permanently.</p>
+                </div>
+              </div>
+
+              <div className="p-3 bg-brand-surface rounded-xl border border-brand-border text-xs text-brand-text">
+                <p className="font-semibold text-brand-primary">{deleteTarget.name}</p>
+                <p className="text-[11px] text-brand-muted mt-0.5">SKU: {deleteTarget.sku} • Price: ₹{deleteTarget.price} • Stock: {deleteTarget.stock}</p>
+              </div>
+
+              <p className="text-xs text-brand-muted">
+                Are you sure you want to permanently delete this product? It will be immediately removed from the catalog, shop pages, and inventory.
+              </p>
+
+              <div className="pt-2 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={() => setDeleteTarget(null)}
+                  className="px-4 py-2 border border-brand-border rounded-lg text-xs font-semibold text-brand-text hover:bg-brand-surface disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={confirmDeleteProduct}
+                  className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow transition disabled:opacity-50 flex items-center space-x-1.5"
+                >
+                  <Trash2 size={14} />
+                  <span>{isDeleting ? 'Deleting...' : 'Yes, Delete Product'}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -567,6 +567,102 @@
   ],
   "orders": [
     {
+      "_id": "ord-1790950930458-435",
+      "orderNumber": "AB-930403-736",
+      "user": "6abfbe118a51da69df5bbe2e",
+      "customerDetails": {
+        "name": "Pooja Hegde",
+        "email": "customer_1790950929790@smoothself.in",
+        "phone": "+91 99887 76655"
+      },
+      "shippingAddress": {
+        "street": "402, Highgrove Apartments, Indiranagar",
+        "apartment": "",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "postalCode": "560038",
+        "country": "India"
+      },
+      "orderItems": [
+        {
+          "product": "6abfba116e5db633b08b43e1",
+          "name": "Neroli Blossom & Mediterranean Squalane Illuminating Body Oil — 100ml",
+          "slug": "neroli-blossom-squalane-illuminating-body-oil",
+          "image": "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=1000&auto=format&fit=crop",
+          "variantTitle": "200ml Regular",
+          "price": 499,
+          "quantity": 1,
+          "total": 499
+        }
+      ],
+      "shippingMethod": "Standard Delivery",
+      "shippingCost": 0,
+      "subtotal": 499,
+      "discountAmount": 0,
+      "couponCode": "",
+      "taxAmount": 0,
+      "totalAmount": 499,
+      "paymentMethod": "COD",
+      "paymentStatus": "Pending",
+      "paymentDetails": {
+        "paidAt": null,
+        "transactionId": null
+      },
+      "orderStatus": "Processing",
+      "courier": "Bluedart / Delhivery Express",
+      "trackingNumber": "TRACK-55294860",
+      "customerNotes": "",
+      "placedAt": "2026-10-02T14:22:10.458Z"
+    },
+    {
+      "_id": "ord-1790949962102-613",
+      "orderNumber": "AB-962024-876",
+      "user": "6abfba488a51da69df5bbde8",
+      "customerDetails": {
+        "name": "Pooja Hegde",
+        "email": "customer_1790949960140@smoothself.in",
+        "phone": "+91 99887 76655"
+      },
+      "shippingAddress": {
+        "street": "402, Highgrove Apartments, Indiranagar",
+        "apartment": "",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "postalCode": "560038",
+        "country": "India"
+      },
+      "orderItems": [
+        {
+          "product": "6abfba116e5db633b08b43e1",
+          "name": "Neroli Blossom & Mediterranean Squalane Illuminating Body Oil — 100ml",
+          "slug": "neroli-blossom-squalane-illuminating-body-oil",
+          "image": "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=1000&auto=format&fit=crop",
+          "variantTitle": "200ml Regular",
+          "price": 499,
+          "quantity": 1,
+          "total": 499
+        }
+      ],
+      "shippingMethod": "Standard Delivery",
+      "shippingCost": 0,
+      "subtotal": 499,
+      "discountAmount": 0,
+      "couponCode": "",
+      "taxAmount": 0,
+      "totalAmount": 499,
+      "paymentMethod": "COD",
+      "paymentStatus": "Pending",
+      "paymentDetails": {
+        "paidAt": null,
+        "transactionId": null
+      },
+      "orderStatus": "Processing",
+      "courier": "Bluedart / Delhivery Express",
+      "trackingNumber": "TRACK-66813142",
+      "customerNotes": "",
+      "placedAt": "2026-10-02T14:06:02.102Z"
+    },
+    {
       "_id": "ord-1790941119105-433",
       "orderNumber": "AB-119104-795",
       "user": "usr-1790941118849-968",
