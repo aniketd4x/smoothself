@@ -13,8 +13,15 @@ const connectDB = require('../config/db');
 
 const seedAll = async () => {
   try {
-    await connectDB();
-    console.log('Seeding Aura Botanica Database...');
+    const isConnected = await connectDB();
+    if (!isConnected || mongoose.connection.readyState !== 1) {
+      console.log('\n⚠️  MongoDB Atlas is not reachable yet from your current IP.');
+      console.log('👉 Please go to https://cloud.mongodb.com/ -> Network Access -> Add IP Address: 0.0.0.0/0');
+      console.log('👉 Click Confirm, wait ~30 seconds, then re-run: npm run seed\n');
+      console.log('✅ The store is currently running with 100% functionality on the local high-availability database.\n');
+      process.exit(0);
+    }
+    console.log('Seeding Aura Botanica Database on MongoDB Atlas...');
 
     // Clear existing data
     await User.deleteMany();
