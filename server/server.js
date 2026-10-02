@@ -63,7 +63,7 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-if (!process.env.VERCEL) {
+if (!process.env.VERCEL && require.main === module) {
   app.listen(PORT, () => {
     console.log(`[SmoothSelf Server] Running on http://localhost:${PORT}`);
   });

@@ -73,25 +73,32 @@ A production-ready e-commerce platform crafted with the visual and UX structure 
 
 ---
 
-## 🚀 Running the Project
+## 🚀 Running the Project (Next.js)
 
-### 1. Start Fullstack Server (Frontend + Backend API Unified)
+### 1. Start Development Server (Next.js Turbopack)
+```bash
+npm run dev
+```
+Runs at: **`http://localhost:3000`**
+
+### 2. Build for Production
+```bash
+npm run build
+```
+
+### 3. Start Production Server
 ```bash
 npm start
 ```
-Runs at: **`http://localhost:5000`**
+Runs at: **`http://localhost:3000`**
 
-### 2. Run Verification Test Suite
+### 4. Run Fullstack Production Verification Suite
 ```bash
 npm run verify
 ```
 
-### 3. Re-seed Database (Reset with Fresh Formulations)
+### 5. Re-seed Supabase Database
 ```bash
 npm run seed
 ```
 
-### 4. Build Frontend
-```bash
-npm run build
-```

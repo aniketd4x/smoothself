@@ -4,7 +4,7 @@ function testEndpoint(path, method = 'GET', body = null, headers = {}) {
   return new Promise((resolve, reject) => {
     const options = {
       hostname: 'localhost',
-      port: 5000,
+      port: process.env.TEST_PORT || process.env.PORT || 3000,
       path,
       method,
       headers: {
