@@ -2,14 +2,21 @@ const express = require('express');
 const router = express.Router();
 const Setting = require('../models/Setting');
 const Subscriber = require('../models/Subscriber');
+const localStore = require('../data/localStore');
 const { protect, adminOnly } = require('../middleware/auth');
+const { isDBConnected } = require('../config/db');
 
 // Public: Get general site settings
 router.get('/', async (req, res) => {
   try {
-    let settings = await Setting.findOne();
+    let settings = null;
+    if (isDBConnected()) {
+      try {
+        settings = await Setting.findOne();
+      } catch (e) {}
+    }
     if (!settings) {
-      settings = await Setting.create({});
+      settings = localStore.getSettings();
     }
     res.json({ success: true, settings });
   } catch (error) {
@@ -20,14 +27,22 @@ router.get('/', async (req, res) => {
 // Admin: Update general site settings
 router.put('/', protect, adminOnly, async (req, res) => {
   try {
-    let settings = await Setting.findOne();
-    if (!settings) {
-      settings = await Setting.create(req.body);
-    } else {
-      Object.assign(settings, req.body);
-      await settings.save();
+    let settings = null;
+    if (isDBConnected()) {
+      try {
+        settings = await Setting.findOne();
+        if (!settings) {
+          settings = await Setting.create(req.body);
+        } else {
+          Object.assign(settings, req.body);
+          await settings.save();
+        }
+      } catch (e) {}
     }
-    res.json({ success: true, settings });
+
+    const localSettings = localStore.updateSettings(req.body);
+
+    res.json({ success: true, settings: settings || localSettings });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -37,27 +52,27 @@ router.put('/', protect, adminOnly, async (req, res) => {
 router.post('/subscribe', async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) {
+    if (!email || !email.trim()) {
       return res.status(400).json({ success: false, message: 'Please provide an email' });
     }
+    const cleanEmail = email.trim().toLowerCase();
 
-    const exists = await Subscriber.findOne({ email: email.toLowerCase() });
-    if (exists) {
-      return res.json({ success: true, message: 'You are already subscribed to our newsletter' });
+    if (isDBConnected()) {
+      try {
+        const exists = await Subscriber.findOne({ email: cleanEmail });
+        if (!exists) {
+          await Subscriber.create({ email: cleanEmail });
+        }
+      } catch (e) {}
     }
 
-    await Subscriber.create({ email: email.toLowerCase() });
-    res.status(201).json({ success: true, message: 'Thank you for subscribing to our updates!' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
+    if (!localStore.data.subscribers) localStore.data.subscribers = [];
+    if (!localStore.data.subscribers.includes(cleanEmail)) {
+      localStore.data.subscribers.push(cleanEmail);
+      localStore.saveData();
+    }
 
-// Admin: Get all subscribers
-router.get('/subscribers', protect, adminOnly, async (req, res) => {
-  try {
-    const subscribers = await Subscriber.find().sort({ createdAt: -1 });
-    res.json({ success: true, count: subscribers.length, subscribers });
+    res.status(201).json({ success: true, message: 'Thank you for subscribing to our updates!' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -33,15 +33,41 @@ const AccountPage = () => {
 
   // Fetch customer orders if logged in
   useEffect(() => {
-    if (user && token) {
-      fetch('/api/orders/my-orders', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) setOrders(data.orders);
+    if (user) {
+      let userLocal = [];
+      try {
+        const localPlaced = JSON.parse(localStorage.getItem('ss_placed_orders') || '[]');
+        userLocal = localPlaced.filter(o => 
+          (o.customerDetails?.email?.toLowerCase() === user.email?.toLowerCase()) ||
+          (o.user && String(o.user) === String(user.id || user._id))
+        );
+      } catch {}
+
+      if (token) {
+        fetch('/api/orders/my-orders', {
+          headers: { 'Authorization': `Bearer ${token}` }
         })
-        .catch(console.error);
+          .then(res => res.ok ? res.json() : null)
+          .then(data => {
+            if (data && data.success && Array.isArray(data.orders)) {
+              const orderMap = new Map();
+              data.orders.forEach(o => orderMap.set(o.orderNumber, o));
+              userLocal.forEach(o => {
+                if (!orderMap.has(o.orderNumber)) {
+                  orderMap.set(o.orderNumber, o);
+                }
+              });
+              setOrders(Array.from(orderMap.values()));
+            } else if (userLocal.length > 0) {
+              setOrders(userLocal);
+            }
+          })
+          .catch(() => {
+            if (userLocal.length > 0) setOrders(userLocal);
+          });
+      } else if (userLocal.length > 0) {
+        setOrders(userLocal);
+      }
     }
   }, [user, token]);
 

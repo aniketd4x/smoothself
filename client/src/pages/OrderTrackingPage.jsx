@@ -16,10 +16,26 @@ const OrderTrackingPage = () => {
     setOrder(null);
 
     try {
-      const res = await fetch(`/api/orders/track/${encodeURIComponent(orderNumber.trim())}`);
-      const data = await res.json();
-      if (data.success && data.order) {
-        setOrder(data.order);
+      let foundOrder = null;
+      try {
+        const res = await fetch(`/api/orders/track/${encodeURIComponent(orderNumber.trim())}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success && data.order) {
+            foundOrder = data.order;
+          }
+        }
+      } catch (e) {}
+
+      if (!foundOrder) {
+        try {
+          const localPlaced = JSON.parse(localStorage.getItem('ss_placed_orders') || '[]');
+          foundOrder = localPlaced.find(o => o.orderNumber?.toUpperCase() === orderNumber.trim().toUpperCase());
+        } catch {}
+      }
+
+      if (foundOrder) {
+        setOrder(foundOrder);
       } else {
         setError('Order not found. Please verify the order number (e.g. AB-123456-789).');
       }
