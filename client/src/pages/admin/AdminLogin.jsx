@@ -16,48 +16,20 @@ const AdminLogin = () => {
     setIsLoading(true);
 
     try {
-      let data = null;
-      try {
-        const res = await fetch('/api/auth/admin/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          data = await res.json();
-        }
-      } catch (netErr) {
-        console.warn('API network error on admin login:', netErr);
-      }
+      const res = await fetch('/api/auth/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
 
-      if (data && data.success && data.user) {
+      if (res.ok && data.success && data.user) {
         loginUser(data.user, data.token);
         showToast('Admin authenticated successfully!');
         navigate('/admin');
-        return;
-      } else if (data && !data.success) {
+      } else {
         showToast(data.message || 'Unauthorized: Admin privileges required', 'error');
-        return;
       }
-
-      // Demo/Fallback admin credentials
-      const emailLower = email.trim().toLowerCase();
-      if ((emailLower === 'admin@smoothself.in' || emailLower === 'admin@aurabotanica.com') && password === 'admin123456') {
-        const adminUser = {
-          id: 'admin-1',
-          name: 'Store Administrator',
-          email: 'admin@smoothself.in',
-          role: 'admin'
-        };
-        const adminToken = 'ss_admin_jwt_' + Date.now();
-        loginUser(adminUser, adminToken);
-        showToast('Admin authenticated successfully!');
-        navigate('/admin');
-        return;
-      }
-
-      showToast('Invalid credentials or unauthorized', 'error');
     } catch {
       showToast('Could not sign in as admin. Please check your credentials.', 'error');
     } finally {

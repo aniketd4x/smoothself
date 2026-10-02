@@ -43,43 +43,21 @@ const AccountPage = () => {
     postalCode: ''
   });
 
-  // Fetch customer orders if logged in
+  // Fetch customer orders from Supabase if logged in
   useEffect(() => {
-    if (user) {
-      let userLocal = [];
-      try {
-        const localPlaced = JSON.parse(localStorage.getItem('ss_placed_orders') || '[]');
-        userLocal = localPlaced.filter(o => 
-          (o.customerDetails?.email?.toLowerCase() === user.email?.toLowerCase()) ||
-          (o.user && String(o.user) === String(user.id || user._id))
-        );
-      } catch {}
-
-      if (token) {
-        fetch('/api/orders/my-orders', {
-          headers: { 'Authorization': `Bearer ${token}` }
+    if (user && token) {
+      fetch('/api/orders/my-orders', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data && data.success && Array.isArray(data.orders)) {
+            setOrders(data.orders);
+          }
         })
-          .then(res => res.ok ? res.json() : null)
-          .then(data => {
-            if (data && data.success && Array.isArray(data.orders)) {
-              const orderMap = new Map();
-              data.orders.forEach(o => orderMap.set(o.orderNumber, o));
-              userLocal.forEach(o => {
-                if (!orderMap.has(o.orderNumber)) {
-                  orderMap.set(o.orderNumber, o);
-                }
-              });
-              setOrders(Array.from(orderMap.values()));
-            } else if (userLocal.length > 0) {
-              setOrders(userLocal);
-            }
-          })
-          .catch(() => {
-            if (userLocal.length > 0) setOrders(userLocal);
-          });
-      } else if (userLocal.length > 0) {
-        setOrders(userLocal);
-      }
+        .catch(err => {
+          console.error('Failed to load orders from Supabase:', err);
+        });
     }
   }, [user, token]);
 
@@ -127,25 +105,17 @@ const AccountPage = () => {
         payload.currentPassword = profileForm.currentPassword;
       }
 
-      let resData = null;
-      try {
-        const res = await fetch('/api/auth/profile', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(payload)
-        });
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          resData = await res.json();
-        }
-      } catch (netErr) {
-        console.warn('Network error updating profile:', netErr);
-      }
+      const res = await fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const resData = await res.json();
 
-      if (resData && resData.success) {
+      if (res.ok && resData.success) {
         updateUser(resData.user, resData.token);
         setProfileForm(prev => ({
           ...prev,
@@ -157,18 +127,8 @@ const AccountPage = () => {
           confirmPassword: ''
         }));
         showToast('Profile and credentials updated successfully!');
-      } else if (resData && !resData.success) {
-        showToast(resData.message || 'Failed to update credentials', 'error');
       } else {
-        // Fallback for offline mode
-        const updatedLocal = {
-          ...user,
-          name: payload.name,
-          email: payload.email,
-          phone: payload.phone
-        };
-        updateUser(updatedLocal, token);
-        showToast('Profile updated locally.');
+        showToast(resData.message || 'Failed to update credentials', 'error');
       }
     } catch (err) {
       showToast('Error updating profile: ' + err.message, 'error');
@@ -181,61 +141,21 @@ const AccountPage = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      let data = null;
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(loginForm)
-        });
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          data = await res.json();
-        }
-      } catch (netErr) {
-        console.warn('API network error on login:', netErr);
-      }
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginForm)
+      });
+      const data = await res.json();
 
-      if (data && data.success) {
+      if (res.ok && data.success) {
         loginUser(data.user, data.token);
         setActiveTab('orders');
-        return;
-      } else if (data && !data.success) {
-        showToast(data.message || 'Invalid login details', 'error');
-        return;
+      } else {
+        showToast(data.message || 'Invalid email or password', 'error');
       }
-
-      // Check local registered users if backend network failed
-      const emailLower = loginForm.email.trim().toLowerCase();
-      let matchedUser = null;
-      try {
-        const storedUsers = JSON.parse(localStorage.getItem('ss_registered_users') || '[]');
-        matchedUser = storedUsers.find(u => u.email === emailLower && u.password === loginForm.password);
-      } catch {}
-
-      // Also check demo customer credentials
-      if (!matchedUser && (emailLower === 'customer@smoothself.in' || emailLower === 'customer@aurabotanica.com') && loginForm.password === 'customer123456') {
-        matchedUser = {
-          id: 'demo-customer',
-          name: 'Demo Customer',
-          email: 'customer@smoothself.in',
-          phone: '+91 99604 42750',
-          role: 'customer',
-          addresses: [],
-          wishlist: []
-        };
-      }
-
-      if (matchedUser) {
-        const tokenStr = 'ss_jwt_' + btoa(emailLower) + '_' + Date.now();
-        loginUser(matchedUser, tokenStr);
-        setActiveTab('orders');
-        return;
-      }
-
-      showToast('Invalid email or password. Please verify credentials.', 'error');
-    } catch {
-      showToast('Login failed. Please try again.', 'error');
+    } catch (err) {
+      showToast('Login failed. Please check your connection and try again.', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -245,59 +165,21 @@ const AccountPage = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      let data = null;
-      try {
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(registerForm)
-        });
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          data = await res.json();
-        }
-      } catch (netErr) {
-        console.warn('API network error on register, using client registration session:', netErr);
-      }
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registerForm)
+      });
+      const data = await res.json();
 
-      if (data && data.success) {
+      if (res.ok && data.success) {
         loginUser(data.user, data.token);
+        showToast('Account created successfully! Welcome to SmoothSelf.');
         setActiveTab('orders');
-        return;
-      } else if (data && !data.success) {
+      } else {
         showToast(data.message || 'Could not register', 'error');
-        return;
       }
-
-      // Resilient fallback (if backend is offline/unreachable)
-      const emailLower = registerForm.email.trim().toLowerCase();
-      const localUser = {
-        id: 'cust-' + Date.now(),
-        name: registerForm.name.trim(),
-        email: emailLower,
-        phone: registerForm.phone ? registerForm.phone.trim() : '',
-        role: 'customer',
-        addresses: [],
-        wishlist: []
-      };
-      const tokenStr = 'ss_jwt_' + btoa(emailLower) + '_' + Date.now();
-      try {
-        const storedUsers = JSON.parse(localStorage.getItem('ss_registered_users') || '[]');
-        const exists = storedUsers.some(u => u.email === emailLower);
-        if (exists) {
-          showToast('An account with this email already exists. Please sign in.', 'error');
-          setAuthMode('login');
-          setLoginForm(prev => ({ ...prev, email: emailLower }));
-          return;
-        }
-        storedUsers.push({ ...localUser, password: registerForm.password });
-        localStorage.setItem('ss_registered_users', JSON.stringify(storedUsers));
-      } catch {}
-
-      loginUser(localUser, tokenStr);
-      showToast('Account created successfully! Welcome to SmoothSelf.');
-      setActiveTab('orders');
-    } catch {
+    } catch (err) {
       showToast('Could not register account. Please check your details.', 'error');
     } finally {
       setIsSubmitting(false);
@@ -308,38 +190,25 @@ const AccountPage = () => {
     e.preventDefault();
     if (!token) return;
     try {
-      let savedOnServer = false;
-      try {
-        const res = await fetch('/api/auth/addresses', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(newAddress)
-        });
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          const data = await res.json();
-          if (data.success) {
-            setAddresses(data.addresses);
-            savedOnServer = true;
-          }
-        }
-      } catch {}
-
-      if (!savedOnServer) {
-        const localAddr = { ...newAddress, _id: 'addr-' + Date.now(), isDefault: addresses.length === 0 };
-        const updated = [...addresses, localAddr];
-        setAddresses(updated);
+      const res = await fetch('/api/auth/addresses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(newAddress)
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAddresses(data.addresses);
         if (user) {
-          const updatedUser = { ...user, addresses: updated };
-          localStorage.setItem('ab_user', JSON.stringify(updatedUser));
+          updateUser({ ...user, addresses: data.addresses }, token);
         }
+        setShowAddressForm(false);
+        showToast('Address saved successfully!');
+      } else {
+        showToast(data.message || 'Failed to save address', 'error');
       }
-
-      setShowAddressForm(false);
-      showToast('Address saved successfully!');
     } catch {
       showToast('Error saving address', 'error');
     }
@@ -348,20 +217,20 @@ const AccountPage = () => {
   const handleDeleteAddress = async (id) => {
     if (!token) return;
     try {
-      try {
-        await fetch(`/api/auth/addresses/${id}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-      } catch {}
-
-      const updated = addresses.filter(a => a._id !== id);
-      setAddresses(updated);
-      if (user) {
-        const updatedUser = { ...user, addresses: updated };
-        localStorage.setItem('ab_user', JSON.stringify(updatedUser));
+      const res = await fetch(`/api/auth/addresses/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAddresses(data.addresses);
+        if (user) {
+          updateUser({ ...user, addresses: data.addresses }, token);
+        }
+        showToast('Address removed', 'info');
+      } else {
+        showToast(data.message || 'Failed to remove address', 'error');
       }
-      showToast('Address removed', 'info');
     } catch {
       showToast('Error deleting address', 'error');
     }

@@ -1,14 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const localStore = require('../data/localStore');
+const jwt = require('jsonwebtoken');
 const supabaseService = require('../services/supabaseService');
-const { protect, generateToken } = require('../middleware/auth');
-const { getSupabase, isSupabaseConnected } = require('../config/supabase');
+const { protect } = require('../middleware/auth');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'smoothself_ultra_secure_jwt_secret_key_2026';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Register customer
+const generateToken = (id) => {
+  return jwt.sign({ id }, JWT_SECRET, { expiresIn: '30d' });
+};
+
+// Register customer via Supabase
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
@@ -27,51 +31,13 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
     }
 
-    // Check if user already exists
-    const existingUser = await supabaseService.findUserByEmail(cleanEmail);
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: 'An account with this email already exists' });
-    }
-
-    let user = null;
-    const sb = getSupabase();
-    if (isSupabaseConnected() && sb) {
-      try {
-        const hashedPassword = bcrypt.hashSync(password, 10);
-        const { data, error } = await sb.from('users').insert({
-          name: name.trim(),
-          email: cleanEmail,
-          password: hashedPassword,
-          phone: phone ? phone.trim() : '',
-          role: 'customer'
-        }).select().single();
-
-        if (!error && data) {
-          user = supabaseService.normalizeUser(data);
-        }
-      } catch (e) {
-        console.warn('[Register Supabase error]', e.message);
-      }
-    }
-
-    if (!user) {
-      const createdLocal = localStore.createUser({
-        name: name.trim(),
-        email: cleanEmail,
-        password,
-        phone: phone ? phone.trim() : '',
-        role: 'customer'
-      });
-      user = supabaseService.normalizeUser(createdLocal);
-    } else {
-      localStore.createUser({
-        name: name.trim(),
-        email: cleanEmail,
-        password,
-        phone: phone ? phone.trim() : '',
-        role: 'customer'
-      });
-    }
+    const user = await supabaseService.createUser({
+      name: name.trim(),
+      email: cleanEmail,
+      password,
+      phone: phone ? phone.trim() : '',
+      role: 'customer'
+    });
 
     const token = generateToken(user._id || user.id);
 
@@ -80,6 +46,7 @@ router.post('/register', async (req, res) => {
       token,
       user: {
         id: user._id || user.id,
+        _id: user._id || user.id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -93,7 +60,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Login customer or admin
+// Login customer or admin via Supabase
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -103,19 +70,20 @@ router.post('/login', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    let user = await supabaseService.findUserByEmail(cleanEmail);
-    if (!user) user = localStore.findUserByEmail(cleanEmail);
+    const user = await supabaseService.findUserByEmail(cleanEmail);
 
-    let isPasswordCorrect = false;
-    if (user && user.password) {
-      try {
-        isPasswordCorrect = bcrypt.compareSync(password, user.password);
-      } catch {
-        isPasswordCorrect = (user.password === password);
-      }
+    if (!user || !user.password) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
-    if (!user || !isPasswordCorrect) {
+    let isPasswordCorrect = false;
+    try {
+      isPasswordCorrect = bcrypt.compareSync(password, user.password);
+    } catch {
+      isPasswordCorrect = (user.password === password);
+    }
+
+    if (!isPasswordCorrect) {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
@@ -126,6 +94,7 @@ router.post('/login', async (req, res) => {
       token,
       user: {
         id: user._id || user.id,
+        _id: user._id || user.id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -139,7 +108,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Admin specific login
+// Admin login via Supabase
 router.post('/admin/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -148,30 +117,20 @@ router.post('/admin/login', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    let adminUser = await supabaseService.findUserByEmail(cleanEmail);
-    if (!adminUser) adminUser = localStore.findUserByEmail(cleanEmail);
+    const adminUser = await supabaseService.findUserByEmail(cleanEmail);
+
+    if (!adminUser || adminUser.role !== 'admin' || !adminUser.password) {
+      return res.status(401).json({ success: false, message: 'Invalid admin credentials or unauthorized' });
+    }
 
     let isMatch = false;
-    if (adminUser && adminUser.role === 'admin' && adminUser.password) {
-      try {
-        isMatch = bcrypt.compareSync(password, adminUser.password);
-      } catch {
-        isMatch = (adminUser.password === password);
-      }
+    try {
+      isMatch = bcrypt.compareSync(password, adminUser.password);
+    } catch {
+      isMatch = (adminUser.password === password);
     }
 
-    // Default admin fallback if not yet modified
-    if (!adminUser && (cleanEmail === 'admin@smoothself.in' || cleanEmail === 'admin@aurabotanica.com') && password === 'admin123456') {
-      adminUser = {
-        _id: 'usr-admin-01',
-        name: 'Store Administrator',
-        email: cleanEmail,
-        role: 'admin'
-      };
-      isMatch = true;
-    }
-
-    if (!adminUser || !isMatch) {
+    if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid admin credentials or unauthorized' });
     }
 
@@ -182,6 +141,7 @@ router.post('/admin/login', async (req, res) => {
       token,
       user: {
         id: adminUser._id || adminUser.id,
+        _id: adminUser._id || adminUser.id,
         name: adminUser.name,
         email: adminUser.email,
         role: adminUser.role
@@ -196,8 +156,11 @@ router.post('/admin/login', async (req, res) => {
 router.get('/me', protect, async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
-    let user = await supabaseService.findUserById(userId);
-    if (!user) user = localStore.findUserById(userId) || req.user;
+    const user = await supabaseService.findUserById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
 
     res.json({
       success: true,
@@ -208,13 +171,16 @@ router.get('/me', protect, async (req, res) => {
   }
 });
 
-// Update profile, email ID, and password (Admin & Customer)
+// Update profile, email ID, and password (Admin & Customer) via Supabase
 router.put('/profile', protect, async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const { name, email, phone, password, currentPassword } = req.body;
 
-    const existingUser = await supabaseService.findUserById(userId) || req.user;
+    const existingUser = await supabaseService.findUserById(userId);
+    if (!existingUser) {
+      return res.status(404).json({ success: false, message: 'User not found in Supabase' });
+    }
 
     // Email validation if changing email
     if (email && email.trim()) {
@@ -229,7 +195,7 @@ router.put('/profile', protect, async (req, res) => {
       if (password.trim().length < 6) {
         return res.status(400).json({ success: false, message: 'New password must be at least 6 characters' });
       }
-      if (existingUser && existingUser.password) {
+      if (existingUser.password) {
         if (!currentPassword) {
           return res.status(400).json({ success: false, message: 'Please provide your current password to set a new password' });
         }
@@ -267,14 +233,14 @@ router.put('/profile', protect, async (req, res) => {
         addresses: updatedUser.addresses || [],
         wishlist: updatedUser.wishlist || []
       },
-      message: 'Profile and credentials updated successfully!'
+      message: 'Profile and credentials updated successfully in Supabase!'
     });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
 });
 
-// Add address
+// Add address in Supabase
 router.post('/addresses', protect, async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
@@ -298,28 +264,28 @@ router.post('/addresses', protect, async (req, res) => {
     }
     addresses.push(newAddress);
 
-    await supabaseService.updateUserCredentials(userId, { addresses });
+    await supabaseService.updateUserAddresses(userId, addresses);
     res.status(201).json({ success: true, addresses });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
 
-// Delete address
+// Delete address in Supabase
 router.delete('/addresses/:id', protect, async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const user = await supabaseService.findUserById(userId);
     let addresses = (user?.addresses || []).filter(a => String(a._id) !== req.params.id && String(a.id) !== req.params.id);
 
-    await supabaseService.updateUserCredentials(userId, { addresses });
+    await supabaseService.updateUserAddresses(userId, addresses);
     res.json({ success: true, addresses });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
 
-// Toggle wishlist
+// Toggle wishlist in Supabase
 router.post('/wishlist/toggle', protect, async (req, res) => {
   try {
     const { productId } = req.body;
@@ -333,11 +299,10 @@ router.post('/wishlist/toggle', protect, async (req, res) => {
       wishlist.splice(idx, 1);
     } else {
       wishlist.push(productId);
-      added = true;
     }
 
     await supabaseService.updateUserCredentials(userId, { wishlist });
-    res.json({ success: true, added, wishlist });
+    res.json({ success: true, added: idx === -1, wishlist });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

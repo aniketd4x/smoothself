@@ -150,9 +150,6 @@ const CheckoutPage = () => {
         const contentType = res.headers.get('content-type') || '';
         if (contentType.includes('application/json')) {
           data = await res.json();
-        } else {
-          const text = await res.text();
-          console.warn('[Order API non-json response]:', text.slice(0, 100));
         }
       } catch (netErr) {
         console.warn('[Order Network Warning]:', netErr.message);
@@ -160,12 +157,6 @@ const CheckoutPage = () => {
 
       // If server responded with success
       if (data && data.success && data.order) {
-        try {
-          const stored = JSON.parse(localStorage.getItem('ss_placed_orders') || '[]');
-          stored.unshift(data.order);
-          localStorage.setItem('ss_placed_orders', JSON.stringify(stored));
-        } catch {}
-
         confetti({
           particleCount: 120,
           spread: 80,
@@ -176,39 +167,10 @@ const CheckoutPage = () => {
         showToast('Order placed successfully! We are preparing your shipment.');
         navigate(`/order-success/${data.order.orderNumber}`, { state: { order: data.order } });
         return;
-      } else if (data && !data.success) {
-        showToast(data.message || 'Could not place order. Please review your details.', 'error');
+      } else {
+        showToast(data?.message || 'Could not place order. Please review your details and try again.', 'error');
         return;
       }
-
-      // Resilient local order fallback if backend is unreachable
-      const offlineOrderNumber = `AB-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
-      const fallbackOrder = {
-        ...orderPayload,
-        _id: 'ord-local-' + Date.now(),
-        orderNumber: offlineOrderNumber,
-        paymentStatus: paymentMethod === 'COD' ? 'Pending' : 'Paid',
-        orderStatus: 'Processing',
-        courier: 'Bluedart Express',
-        trackingNumber: `TRACK-${Math.floor(10000000 + Math.random() * 90000000)}`,
-        placedAt: new Date().toISOString()
-      };
-
-      try {
-        const stored = JSON.parse(localStorage.getItem('ss_placed_orders') || '[]');
-        stored.unshift(fallbackOrder);
-        localStorage.setItem('ss_placed_orders', JSON.stringify(stored));
-      } catch {}
-
-      confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.6 }
-      });
-
-      clearCart();
-      showToast('Order confirmed! Tracking details assigned.');
-      navigate(`/order-success/${fallbackOrder.orderNumber}`, { state: { order: fallbackOrder } });
     } catch (err) {
       console.error('[Order Submit Catch]', err);
       showToast('Error processing order. Please check your information.', 'error');

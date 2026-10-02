@@ -132,3 +132,51 @@ create table if not exists public.settings (
   currency_symbol text default '₹',
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- 8. Banners Table
+create table if not exists public.banners (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  subtitle text,
+  image text not null,
+  mobile_image text,
+  link text default '/shop',
+  cta_text text default 'Shop Now',
+  display_order integer default 0,
+  is_active boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 9. Blogs Table
+create table if not exists public.blogs (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  slug text unique not null,
+  excerpt text,
+  content text,
+  author text default 'SmoothSelf Botanical Lab',
+  image text,
+  read_time text default '4 min read',
+  published boolean default true,
+  tags jsonb default '[]'::jsonb,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 10. FAQs Table
+create table if not exists public.faqs (
+  id uuid primary key default gen_random_uuid(),
+  question text not null,
+  answer text not null,
+  category text default 'General',
+  display_order integer default 0,
+  is_active boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 11. Subscribers Table
+create table if not exists public.subscribers (
+  id uuid primary key default gen_random_uuid(),
+  email text unique not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+

@@ -15,7 +15,7 @@ function initSupabase() {
     if (!supabaseUrl) {
       console.warn('[Database Notice] Supabase URL is waiting for configuration in .env (NEXT_PUBLIC_SUPABASE_URL).');
     }
-    console.log('[Database HA] SmoothSelf High-Availability Local Engine is active. 100% of store, checkout, and auth operations will succeed seamlessly.');
+    console.error('[Database Error] NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is missing in .env');
     return null;
   }
 

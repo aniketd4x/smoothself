@@ -1,12 +1,10 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const User = require('../models/User');
-const localStore = require('../data/localStore');
-const { isDBConnected } = require('../config/db');
+const supabaseService = require('../services/supabaseService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'smoothself_ultra_secure_jwt_secret_key_2026';
 
-// Protect routes - requires customer or admin login
+// Protect routes - requires customer or admin login via Supabase
 const protect = async (req, res, next) => {
   let token;
 
@@ -18,29 +16,12 @@ const protect = async (req, res, next) => {
     return res.status(401).json({ success: false, message: 'Not authorized to access this route' });
   }
 
-  // Support offline / local admin session tokens
-  if (token.startsWith('ss_admin_jwt_')) {
-    req.user = {
-      _id: 'usr-admin-01',
-      id: 'usr-admin-01',
-      name: 'Store Administrator',
-      email: 'admin@smoothself.in',
-      role: 'admin'
-    };
-    return next();
-  }
-
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const supabaseService = require('../services/supabaseService');
-    user = await supabaseService.findUserById(decoded.id);
+    const user = await supabaseService.findUserById(decoded.id);
 
     if (!user) {
-      user = localStore.findUserById(decoded.id);
-    }
-
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'User session expired or user no longer exists' });
+      return res.status(401).json({ success: false, message: 'User session expired or user no longer exists in Supabase' });
     }
 
     req.user = user;
@@ -59,11 +40,4 @@ const adminOnly = (req, res, next) => {
   }
 };
 
-// Generate JWT token helper
-const generateToken = (id) => {
-  return jwt.sign({ id: String(id) }, JWT_SECRET, {
-    expiresIn: '30d'
-  });
-};
-
-module.exports = { protect, adminOnly, generateToken };
+module.exports = { protect, adminOnly };
