@@ -40,7 +40,7 @@ const ContactPage = () => {
                 <MapPin size={18} className="text-brand-primary flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold text-brand-text">Laboratory & Studio</p>
-                  <p>{settings.contactAddress || 'Botanical House, Level 4, Outer Ring Road, Bengaluru, Karnataka, 560103'}</p>
+                  <p>{settings.contactAddress || 'Mumbai, Maharashtra'}</p>
                 </div>
               </div>
 
@@ -48,8 +48,8 @@ const ContactPage = () => {
                 <Mail size={18} className="text-brand-primary flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold text-brand-text">Email Support</p>
-                  <a href={`mailto:${settings.contactEmail || 'care@aurabotanica.com'}`} className="text-brand-primary hover:underline">
-                    {settings.contactEmail || 'care@aurabotanica.com'}
+                  <a href={`mailto:${settings.contactEmail || 'support@smoothself.in'}`} className="text-brand-primary hover:underline">
+                    {settings.contactEmail || 'support@smoothself.in'}
                   </a>
                 </div>
               </div>

@@ -26,6 +26,10 @@ import FAQPage from './pages/FAQPage';
 import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
 import PolicyPage from './pages/PolicyPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import RefundPolicyPage from './pages/RefundPolicyPage';
+import ShippingPolicyPage from './pages/ShippingPolicyPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
 import OrderTrackingPage from './pages/OrderTrackingPage';
 
 // Admin Pages
@@ -78,6 +82,14 @@ const StorefrontShell = () => {
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogPostPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/refund-policy" element={<RefundPolicyPage />} />
+          <Route path="/refund" element={<RefundPolicyPage />} />
+          <Route path="/shipping-policy" element={<ShippingPolicyPage />} />
+          <Route path="/shipping" element={<ShippingPolicyPage />} />
+          <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+          <Route path="/terms" element={<TermsOfServicePage />} />
           <Route path="/policy/:policyType" element={<PolicyPage />} />
           <Route path="/track-order" element={<OrderTrackingPage />} />
 

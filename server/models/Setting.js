@@ -11,9 +11,9 @@ const settingSchema = new mongoose.Schema({
   standardShippingFee: { type: Number, default: 50 },
   expressShippingFee: { type: Number, default: 100 },
   taxPercentage: { type: Number, default: 0 }, // Prices are tax included
-  contactEmail: { type: String, default: 'care@smoothself.in' },
+  contactEmail: { type: String, default: 'support@smoothself.in' },
   contactPhone: { type: String, default: '+91 98765 43210' },
-  contactAddress: { type: String, default: 'Botanical House, Level 4, Outer Ring Road, Bengaluru, Karnataka, 560103' },
+  contactAddress: { type: String, default: 'Mumbai, Maharashtra' },
   currency: { type: String, default: 'INR' },
   currencySymbol: { type: String, default: '₹' },
   instagramUrl: { type: String, default: 'https://instagram.com/' },

@@ -160,7 +160,7 @@ const OrderSuccessPage = () => {
                 <p className="font-bold text-brand-text mb-1">Payment Method</p>
                 <p className="text-brand-text font-medium">{order.paymentMethod === 'COD' ? 'Cash on Delivery (COD)' : 'Secure Online Payment'}</p>
                 <p className="mt-2 font-bold text-brand-text">Need Assistance?</p>
-                <p>Email: care@aurabotanica.com</p>
+                <p>Email: <a href="mailto:support@smoothself.in" className="text-brand-primary underline">support@smoothself.in</a></p>
               </div>
             </div>
           </div>

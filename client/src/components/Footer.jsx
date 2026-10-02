@@ -153,16 +153,16 @@ const Footer = () => {
             </h4>
             <ul className="space-y-2.5 text-sm text-brand-muted">
               <li>
-                <Link to="/policy/privacy" className="hover:text-brand-primary transition">Privacy Policy</Link>
+                <Link to="/privacy-policy" className="hover:text-brand-primary transition">Privacy Policy</Link>
               </li>
               <li>
-                <Link to="/policy/refund" className="hover:text-brand-primary transition">Refund Policy</Link>
+                <Link to="/refund-policy" className="hover:text-brand-primary transition">Refund Policy</Link>
               </li>
               <li>
-                <Link to="/policy/shipping" className="hover:text-brand-primary transition">Shipping Policy</Link>
+                <Link to="/shipping-policy" className="hover:text-brand-primary transition">Shipping Policy</Link>
               </li>
               <li>
-                <Link to="/policy/terms" className="hover:text-brand-primary transition">Terms of Service</Link>
+                <Link to="/terms-of-service" className="hover:text-brand-primary transition">Terms of Service</Link>
               </li>
             </ul>
           </div>
@@ -173,12 +173,12 @@ const Footer = () => {
               Our store
             </h4>
             <p className="text-sm text-brand-muted leading-relaxed mb-3">
-              {settings.contactAddress || 'Botanical House, Level 4, Outer Ring Road, Bengaluru, Karnataka, 560103'}
+              {settings.contactAddress || 'Mumbai, Maharashtra'}
             </p>
             <p className="text-sm text-brand-muted mb-1.5">
               <span className="font-medium text-brand-text">Email: </span>
-              <a href={`mailto:${settings.contactEmail || 'care@aurabotanica.com'}`} className="hover:text-brand-primary">
-                {settings.contactEmail || 'care@aurabotanica.com'}
+              <a href={`mailto:${settings.contactEmail || 'support@smoothself.in'}`} className="hover:text-brand-primary">
+                {settings.contactEmail || 'support@smoothself.in'}
               </a>
             </p>
             <p className="text-sm text-brand-muted mb-4">

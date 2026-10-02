@@ -231,6 +231,16 @@ const AdminSettings = () => {
                 className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg"
               />
             </div>
+
+            <div>
+              <label className="block font-bold text-brand-text mb-1">Terms of Service</label>
+              <textarea
+                rows={3}
+                value={formData.termsOfService || ''}
+                onChange={e => setFormData({ ...formData, termsOfService: e.target.value })}
+                className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg"
+              />
+            </div>
           </div>
         </div>
 
