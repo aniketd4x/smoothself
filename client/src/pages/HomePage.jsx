@@ -19,6 +19,8 @@ import {
 
 import heroStrawberryImg from '../assets/hero_strawberry.jpg';
 import heroVanillaImg from '../assets/hero_vanilla.jpg';
+import heroStrawberryMobileImg from '../assets/hero_strawberry_mobile.jpg';
+import heroVanillaMobileImg from '../assets/hero_vanilla_mobile.jpg';
 import editorialDuoImg from '../assets/editorial_duo_lotions.jpg';
 
 const DEFAULT_BANNERS = [
@@ -29,7 +31,8 @@ const DEFAULT_BANNERS = [
     tagline: 'SMOOTHSELF SIGNATURE COLLECTION • 200ML',
     buttonText: 'Shop Strawberry — ₹249',
     buttonLink: '/product/strawberry-lotion',
-    imageUrl: heroStrawberryImg
+    imageUrl: heroStrawberryImg,
+    mobileImageUrl: heroStrawberryMobileImg
   },
   {
     _id: 'default-vanilla',
@@ -38,7 +41,8 @@ const DEFAULT_BANNERS = [
     tagline: 'DAILY-USE FORMULA • 200ML • CALMING COMFORT',
     buttonText: 'Shop Vanilla — ₹249',
     buttonLink: '/product/vanilla-body-lotion',
-    imageUrl: heroVanillaImg
+    imageUrl: heroVanillaImg,
+    mobileImageUrl: heroVanillaMobileImg
   }
 ];
 
@@ -94,9 +98,20 @@ const HomePage = () => {
       .then(data => {
         if (data?.success && data.banners?.length > 0) {
           const resolved = data.banners.map((b) => {
-            if (b.imageUrl === '/hero_strawberry.jpg') return { ...b, imageUrl: heroStrawberryImg };
-            if (b.imageUrl === '/hero_vanilla.jpg') return { ...b, imageUrl: heroVanillaImg };
-            return b;
+            let img = b.imageUrl;
+            let mobImg = b.mobileImageUrl;
+            if (img === '/hero_strawberry.jpg' || img?.includes('strawberry')) {
+              img = heroStrawberryImg;
+              mobImg = mobImg || heroStrawberryMobileImg;
+            } else if (img === '/hero_vanilla.jpg' || img?.includes('vanilla')) {
+              img = heroVanillaImg;
+              mobImg = mobImg || heroVanillaMobileImg;
+            }
+            return {
+              ...b,
+              imageUrl: img,
+              mobileImageUrl: mobImg || img
+            };
           });
           setBanners(resolved);
         }
@@ -116,58 +131,70 @@ const HomePage = () => {
   return (
     <div className="w-full">
       {/* 1. HERO SLIDESHOW SECTION */}
-      <section className="relative w-full h-[70vh] sm:h-[75vh] md:h-[82vh] bg-brand-primary overflow-hidden">
-        {banners.map((banner, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              index === activeSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-            }`}
-          >
-            {/* Background Image with Dark Vignette */}
-            <div className="absolute inset-0 overflow-hidden">
-              <img
-                src={banner.imageUrl || (index === 0 ? heroStrawberryImg : heroVanillaImg)}
-                alt={banner.title}
-                className="w-full h-full object-cover object-center select-none"
-                loading={index === 0 ? 'eager' : 'lazy'}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-transparent"></div>
-            </div>
+      <section className="relative w-full h-[76vh] sm:h-[75vh] md:h-[82vh] min-h-[520px] bg-brand-primary overflow-hidden">
+        {banners.map((banner, index) => {
+          const desktopImg = banner.imageUrl || (index === 0 ? heroStrawberryImg : heroVanillaImg);
+          const mobileImg = banner.mobileImageUrl || (index === 0 ? heroStrawberryMobileImg : heroVanillaMobileImg);
 
-            {/* Slide Content */}
-            <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
-              <div className="max-w-xl text-white space-y-4 sm:space-y-6 animate-fade-in">
-                {banner.tagline && (
-                  <span className="inline-block text-[11px] sm:text-xs font-semibold tracking-[0.25em] uppercase text-purple-200 bg-white/10 backdrop-blur-md px-3.5 py-1 rounded-full border border-white/20">
-                    {banner.tagline}
-                  </span>
-                )}
-                <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-white drop-shadow-md">
-                  {banner.title}
-                </h1>
-                <p className="text-sm sm:text-base md:text-lg text-gray-200 font-light leading-relaxed max-w-lg">
-                  {banner.subtitle}
-                </p>
-                <div className="pt-2 flex flex-wrap gap-3">
-                  <Link
-                    to={banner.buttonLink || '/shop'}
-                    className="inline-flex items-center space-x-2 px-8 py-3.5 bg-white text-brand-primary hover:bg-brand-surface font-semibold text-sm rounded-full shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-0.5"
-                  >
-                    <span>{banner.buttonText || 'Shop Collection'}</span>
-                    <ArrowRight size={16} />
-                  </Link>
-                  <Link
-                    to="/shop"
-                    className="inline-flex items-center space-x-2 px-6 py-3.5 bg-white/15 hover:bg-white/25 text-white backdrop-blur-sm font-semibold text-sm rounded-full border border-white/30 transition duration-300"
-                  >
-                    <span>View Both Lotions</span>
-                  </Link>
+          return (
+            <div
+              key={index}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                index === activeSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+              }`}
+            >
+              {/* Background Image: Responsive Desktop & Mobile with <picture> */}
+              <div className="absolute inset-0 overflow-hidden">
+                <picture className="w-full h-full">
+                  <source
+                    media="(max-width: 767px)"
+                    srcSet={mobileImg}
+                  />
+                  <img
+                    src={desktopImg}
+                    alt={banner.title}
+                    className="w-full h-full object-cover object-center select-none"
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                  />
+                </picture>
+                {/* Adaptive Dark Vignette: vertical on mobile for readability, horizontal on desktop */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/20 sm:bg-gradient-to-r sm:from-black/75 sm:via-black/45 sm:to-transparent"></div>
+              </div>
+
+              {/* Slide Content */}
+              <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end sm:items-center pb-14 sm:pb-0">
+                <div className="max-w-xl text-white space-y-3 sm:space-y-6 animate-fade-in">
+                  {banner.tagline && (
+                    <span className="inline-block text-[10px] sm:text-xs font-semibold tracking-[0.2em] sm:tracking-[0.25em] uppercase text-purple-200 bg-black/40 sm:bg-white/10 backdrop-blur-md px-3 sm:px-3.5 py-1 rounded-full border border-white/20">
+                      {banner.tagline}
+                    </span>
+                  )}
+                  <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-white drop-shadow-md">
+                    {banner.title}
+                  </h1>
+                  <p className="text-xs sm:text-base md:text-lg text-gray-200 font-light leading-relaxed max-w-lg">
+                    {banner.subtitle}
+                  </p>
+                  <div className="pt-1 sm:pt-2 flex flex-wrap gap-2.5 sm:gap-3">
+                    <Link
+                      to={banner.buttonLink || '/shop'}
+                      className="inline-flex items-center space-x-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-white text-brand-primary hover:bg-brand-surface font-semibold text-xs sm:text-sm rounded-full shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-0.5"
+                    >
+                      <span>{banner.buttonText || 'Shop Collection'}</span>
+                      <ArrowRight size={15} />
+                    </Link>
+                    <Link
+                      to="/shop"
+                      className="inline-flex items-center space-x-2 px-5 sm:px-6 py-3 sm:py-3.5 bg-white/20 hover:bg-white/30 text-white backdrop-blur-md font-semibold text-xs sm:text-sm rounded-full border border-white/30 transition duration-300"
+                    >
+                      <span>View Both Lotions</span>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {/* Slideshow Controls (Bullets & Arrows) */}
         {banners.length > 1 && (

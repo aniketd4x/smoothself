@@ -8,6 +8,7 @@ const AdminBanners = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeModal, setActiveModal] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingMobile, setIsUploadingMobile] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     subtitle: '',
@@ -15,6 +16,7 @@ const AdminBanners = () => {
     buttonText: 'Shop Bestsellers',
     buttonLink: '/shop',
     imageUrl: '',
+    mobileImageUrl: '',
     order: 1,
     isActive: true
   });
@@ -42,6 +44,7 @@ const AdminBanners = () => {
       buttonText: 'Shop Collection',
       buttonLink: '/shop',
       imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=1800&auto=format&fit=crop',
+      mobileImageUrl: '',
       order: banners.length + 1,
       isActive: true
     });
@@ -49,7 +52,10 @@ const AdminBanners = () => {
   };
 
   const openEditModal = (banner) => {
-    setFormData(banner);
+    setFormData({
+      ...banner,
+      mobileImageUrl: banner.mobileImageUrl || ''
+    });
     setActiveModal(banner);
   };
 
@@ -78,6 +84,35 @@ const AdminBanners = () => {
       showToast('Image upload failed: ' + err.message, 'error');
     } finally {
       setIsUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleMobileBannerImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingMobile(true);
+    try {
+      const data = new FormData();
+      data.append('image', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: data
+      });
+      const resData = await res.json();
+      if (resData.success && resData.url) {
+        setFormData(prev => ({ ...prev, mobileImageUrl: resData.url }));
+        showToast('Mobile hero image uploaded successfully!');
+      } else {
+        showToast(resData.message || 'Upload failed', 'error');
+      }
+    } catch (err) {
+      showToast('Mobile image upload failed: ' + err.message, 'error');
+    } finally {
+      setIsUploadingMobile(false);
       e.target.value = '';
     }
   };
@@ -157,6 +192,11 @@ const AdminBanners = () => {
                 }`}>
                   {b.isActive ? 'Live' : 'Hidden'}
                 </span>
+                {b.mobileImageUrl && (
+                  <span className="absolute top-3 left-3 text-[10px] font-bold px-2 py-0.5 rounded uppercase bg-purple-100 text-purple-800 shadow-sm">
+                    📱 Mobile Ready
+                  </span>
+                )}
               </div>
               <div className="p-5 space-y-2">
                 {b.tagline && <span className="text-[10px] uppercase font-bold text-brand-muted">{b.tagline}</span>}
@@ -271,6 +311,45 @@ const AdminBanners = () => {
                     value={formData.imageUrl}
                     onChange={e => setFormData({ ...formData, imageUrl: e.target.value })}
                     placeholder="Or enter image URL"
+                    className="w-full px-3 py-1.5 bg-white border border-brand-border rounded-lg text-xs"
+                  />
+                </div>
+
+                {/* Mobile Specific Hero Image */}
+                <div className="bg-brand-surface/50 border border-brand-border rounded-xl p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="block font-bold text-brand-text text-xs">Mobile Hero Image (9:16 Portrait)</label>
+                      <span className="text-[10px] text-brand-muted">Vertical banner optimized for smartphones</span>
+                    </div>
+                    <label className={`cursor-pointer inline-flex items-center space-x-1.5 px-3 py-1 bg-brand-primary text-white text-xs font-semibold rounded-lg hover:bg-brand-hover transition shadow-sm ${isUploadingMobile ? 'opacity-60 pointer-events-none' : ''}`}>
+                      {isUploadingMobile ? <Loader2 size={13} className="animate-spin" /> : <UploadCloud size={13} />}
+                      <span>{isUploadingMobile ? 'Uploading...' : 'Upload Mobile'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleMobileBannerImageUpload}
+                        disabled={isUploadingMobile}
+                      />
+                    </label>
+                  </div>
+
+                  {formData.mobileImageUrl && (
+                    <div className="relative w-28 aspect-[9/16] rounded-lg overflow-hidden border border-brand-border bg-gray-100 shadow-sm mx-auto">
+                      <img
+                        src={formData.mobileImageUrl}
+                        alt="Mobile Banner Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+
+                  <input
+                    type="text"
+                    value={formData.mobileImageUrl || ''}
+                    onChange={e => setFormData({ ...formData, mobileImageUrl: e.target.value })}
+                    placeholder="Or enter mobile image URL (optional, falls back to desktop)"
                     className="w-full px-3 py-1.5 bg-white border border-brand-border rounded-lg text-xs"
                   />
                 </div>
