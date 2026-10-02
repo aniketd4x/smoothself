@@ -242,6 +242,15 @@ export const AppProvider = ({ children }) => {
     showToast('Logged out successfully', 'info');
   };
 
+  const updateUser = (userData, newToken = null) => {
+    setUser(prev => ({ ...prev, ...userData }));
+    localStorage.setItem('ab_user', JSON.stringify({ ...user, ...userData }));
+    if (newToken) {
+      setToken(newToken);
+      localStorage.setItem('ab_token', newToken);
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       settings,
@@ -250,6 +259,7 @@ export const AppProvider = ({ children }) => {
       token,
       loginUser,
       logoutUser,
+      updateUser,
       isAdmin: user?.role === 'admin',
       cart,
       addToCart,

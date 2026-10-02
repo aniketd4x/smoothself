@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 const localStore = require('../data/localStore');
+const supabaseService = require('../services/supabaseService');
 const { protect, generateToken } = require('../middleware/auth');
-const { isDBConnected } = require('../config/db');
+const { getSupabase, isSupabaseConnected } = require('../config/supabase');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -26,48 +27,34 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
     }
 
+    // Check if user already exists
+    const existingUser = await supabaseService.findUserByEmail(cleanEmail);
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'An account with this email already exists' });
+    }
+
     let user = null;
-
-    if (isDBConnected()) {
+    const sb = getSupabase();
+    if (isSupabaseConnected() && sb) {
       try {
-        const existingUser = await User.findOne({ email: cleanEmail });
-        if (existingUser) {
-          return res.status(400).json({ success: false, message: 'An account with this email already exists' });
-        }
-
-        const createdUser = await User.create({
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        const { data, error } = await sb.from('users').insert({
           name: name.trim(),
           email: cleanEmail,
-          password,
+          password: hashedPassword,
           phone: phone ? phone.trim() : '',
           role: 'customer'
-        });
+        }).select().single();
 
-        user = {
-          _id: createdUser._id,
-          id: createdUser._id,
-          name: createdUser.name,
-          email: createdUser.email,
-          role: createdUser.role,
-          phone: createdUser.phone,
-          addresses: createdUser.addresses || [],
-          wishlist: createdUser.wishlist || []
-        };
-      } catch (dbErr) {
-        if (dbErr.code === 11000) {
-          return res.status(400).json({ success: false, message: 'An account with this email already exists' });
+        if (!error && data) {
+          user = supabaseService.normalizeUser(data);
         }
-        console.warn('[Register Fallback]', dbErr.message);
+      } catch (e) {
+        console.warn('[Register Supabase error]', e.message);
       }
     }
 
-    // If DB is offline or failed, use localStore
     if (!user) {
-      const existingLocal = localStore.findUserByEmail(cleanEmail);
-      if (existingLocal) {
-        return res.status(400).json({ success: false, message: 'An account with this email already exists' });
-      }
-
       const createdLocal = localStore.createUser({
         name: name.trim(),
         email: cleanEmail,
@@ -75,36 +62,33 @@ router.post('/register', async (req, res) => {
         phone: phone ? phone.trim() : '',
         role: 'customer'
       });
-
-      user = {
-        _id: createdLocal._id,
-        id: createdLocal._id,
-        name: createdLocal.name,
-        email: createdLocal.email,
-        role: createdLocal.role,
-        phone: createdLocal.phone,
-        addresses: createdLocal.addresses || [],
-        wishlist: createdLocal.wishlist || []
-      };
+      user = supabaseService.normalizeUser(createdLocal);
+    } else {
+      localStore.createUser({
+        name: name.trim(),
+        email: cleanEmail,
+        password,
+        phone: phone ? phone.trim() : '',
+        role: 'customer'
+      });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user._id || user.id);
 
     res.status(201).json({
       success: true,
       token,
       user: {
-        id: user._id,
+        id: user._id || user.id,
         name: user.name,
         email: user.email,
         role: user.role,
         phone: user.phone,
-        addresses: user.addresses,
-        wishlist: user.wishlist
+        addresses: user.addresses || [],
+        wishlist: user.wishlist || []
       }
     });
   } catch (error) {
-    console.error('[Register Error]', error);
     res.status(400).json({ success: false, message: error.message || 'Could not complete registration' });
   }
 });
@@ -119,48 +103,15 @@ router.post('/login', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    let user = null;
+    let user = await supabaseService.findUserByEmail(cleanEmail);
+    if (!user) user = localStore.findUserByEmail(cleanEmail);
+
     let isPasswordCorrect = false;
-
-    // 1. Try DB
-    if (isDBConnected()) {
+    if (user && user.password) {
       try {
-        const dbUser = await User.findOne({ email: cleanEmail }).select('+password');
-        if (dbUser) {
-          isPasswordCorrect = await dbUser.matchPassword(password);
-          if (isPasswordCorrect) {
-            user = {
-              _id: dbUser._id,
-              name: dbUser.name,
-              email: dbUser.email,
-              role: dbUser.role,
-              phone: dbUser.phone,
-              addresses: dbUser.addresses || [],
-              wishlist: dbUser.wishlist || []
-            };
-          }
-        }
-      } catch (dbErr) {
-        console.warn('[Login DB Notice]', dbErr.message);
-      }
-    }
-
-    // 2. Try localStore if not authenticated yet
-    if (!user) {
-      const localUser = localStore.findUserByEmail(cleanEmail);
-      if (localUser) {
-        isPasswordCorrect = localStore.matchPassword(password, localUser.password);
-        if (isPasswordCorrect) {
-          user = {
-            _id: localUser._id,
-            name: localUser.name,
-            email: localUser.email,
-            role: localUser.role,
-            phone: localUser.phone,
-            addresses: localUser.addresses || [],
-            wishlist: localUser.wishlist || []
-          };
-        }
+        isPasswordCorrect = bcrypt.compareSync(password, user.password);
+      } catch {
+        isPasswordCorrect = (user.password === password);
       }
     }
 
@@ -168,23 +119,22 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user._id || user.id);
 
     res.json({
       success: true,
       token,
       user: {
-        id: user._id,
+        id: user._id || user.id,
         name: user.name,
         email: user.email,
         role: user.role,
         phone: user.phone,
-        addresses: user.addresses,
-        wishlist: user.wishlist
+        addresses: user.addresses || [],
+        wishlist: user.wishlist || []
       }
     });
   } catch (error) {
-    console.error('[Login Error]', error);
     res.status(500).json({ success: false, message: error.message || 'Login failed' });
   }
 });
@@ -198,27 +148,19 @@ router.post('/admin/login', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    let adminUser = null;
+    let adminUser = await supabaseService.findUserByEmail(cleanEmail);
+    if (!adminUser) adminUser = localStore.findUserByEmail(cleanEmail);
+
     let isMatch = false;
-
-    if (isDBConnected()) {
+    if (adminUser && adminUser.role === 'admin' && adminUser.password) {
       try {
-        const user = await User.findOne({ email: cleanEmail }).select('+password');
-        if (user && user.role === 'admin') {
-          isMatch = await user.matchPassword(password);
-          if (isMatch) adminUser = user;
-        }
-      } catch (e) {}
-    }
-
-    if (!adminUser) {
-      const localAdmin = localStore.findUserByEmail(cleanEmail);
-      if (localAdmin && localAdmin.role === 'admin') {
-        isMatch = localStore.matchPassword(password, localAdmin.password);
-        if (isMatch) adminUser = localAdmin;
+        isMatch = bcrypt.compareSync(password, adminUser.password);
+      } catch {
+        isMatch = (adminUser.password === password);
       }
     }
 
+    // Default admin fallback if not yet modified
     if (!adminUser && (cleanEmail === 'admin@smoothself.in' || cleanEmail === 'admin@aurabotanica.com') && password === 'admin123456') {
       adminUser = {
         _id: 'usr-admin-01',
@@ -233,13 +175,13 @@ router.post('/admin/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid admin credentials or unauthorized' });
     }
 
-    const token = generateToken(adminUser._id);
+    const token = generateToken(adminUser._id || adminUser.id);
 
     res.json({
       success: true,
       token,
       user: {
-        id: adminUser._id,
+        id: adminUser._id || adminUser.id,
         name: adminUser.name,
         email: adminUser.email,
         role: adminUser.role
@@ -253,65 +195,82 @@ router.post('/admin/login', async (req, res) => {
 // Get current user profile
 router.get('/me', protect, async (req, res) => {
   try {
-    let user = null;
-    if (isDBConnected()) {
-      try {
-        user = await User.findById(req.user._id || req.user.id).populate('wishlist');
-      } catch (e) {}
-    }
-    if (!user) {
-      user = localStore.findUserById(req.user._id || req.user.id);
-    }
+    const userId = req.user._id || req.user.id;
+    let user = await supabaseService.findUserById(userId);
+    if (!user) user = localStore.findUserById(userId) || req.user;
 
     res.json({
       success: true,
-      user: user || req.user
+      user
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
 
-// Update profile
+// Update profile, email ID, and password (Admin & Customer)
 router.put('/profile', protect, async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
-    let updated = null;
+    const { name, email, phone, password, currentPassword } = req.body;
 
-    if (isDBConnected()) {
-      try {
-        const user = await User.findById(userId);
-        if (user) {
-          user.name = req.body.name || user.name;
-          user.phone = req.body.phone !== undefined ? req.body.phone : user.phone;
-          if (req.body.password) user.password = req.body.password;
-          await user.save();
-          updated = user;
-        }
-      } catch (e) {}
+    const existingUser = await supabaseService.findUserById(userId) || req.user;
+
+    // Email validation if changing email
+    if (email && email.trim()) {
+      const cleanEmail = email.trim().toLowerCase();
+      if (!EMAIL_REGEX.test(cleanEmail)) {
+        return res.status(400).json({ success: false, message: 'Please provide a valid email address' });
+      }
     }
 
-    const localUpdated = localStore.updateUser(userId, {
-      name: req.body.name,
-      phone: req.body.phone,
-      password: req.body.password
+    // If changing password, verify current password
+    if (password && password.trim()) {
+      if (password.trim().length < 6) {
+        return res.status(400).json({ success: false, message: 'New password must be at least 6 characters' });
+      }
+      if (existingUser && existingUser.password) {
+        if (!currentPassword) {
+          return res.status(400).json({ success: false, message: 'Please provide your current password to set a new password' });
+        }
+        let isCurrentValid = false;
+        try {
+          isCurrentValid = bcrypt.compareSync(currentPassword, existingUser.password);
+        } catch {
+          isCurrentValid = (currentPassword === existingUser.password);
+        }
+        if (!isCurrentValid) {
+          return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+        }
+      }
+    }
+
+    const updatedUser = await supabaseService.updateUserCredentials(userId, {
+      name,
+      email,
+      phone,
+      password: password && password.trim() ? password.trim() : undefined
     });
 
-    const finalUser = updated || localUpdated || req.user;
+    const newToken = generateToken(updatedUser._id || updatedUser.id);
 
     res.json({
       success: true,
+      token: newToken,
       user: {
-        id: finalUser._id,
-        name: finalUser.name,
-        email: finalUser.email,
-        role: finalUser.role,
-        phone: finalUser.phone,
-        addresses: finalUser.addresses
-      }
+        id: updatedUser._id || updatedUser.id,
+        _id: updatedUser._id || updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        phone: updatedUser.phone,
+        addresses: updatedUser.addresses || [],
+        wishlist: updatedUser.wishlist || []
+      },
+      message: 'Profile and credentials updated successfully!'
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 
@@ -332,33 +291,14 @@ router.post('/addresses', protect, async (req, res) => {
       isDefault: Boolean(req.body.isDefault)
     };
 
-    let addresses = [];
-
-    if (isDBConnected()) {
-      try {
-        const user = await User.findById(userId);
-        if (user) {
-          if (newAddress.isDefault) {
-            user.addresses.forEach(a => a.isDefault = false);
-          }
-          user.addresses.push(newAddress);
-          await user.save();
-          addresses = user.addresses;
-        }
-      } catch (e) {}
+    const user = await supabaseService.findUserById(userId);
+    let addresses = user?.addresses || [];
+    if (newAddress.isDefault) {
+      addresses.forEach(a => a.isDefault = false);
     }
+    addresses.push(newAddress);
 
-    const localUser = localStore.findUserById(userId);
-    if (localUser) {
-      if (!localUser.addresses) localUser.addresses = [];
-      if (newAddress.isDefault) {
-        localUser.addresses.forEach(a => a.isDefault = false);
-      }
-      localUser.addresses.push(newAddress);
-      localStore.saveData();
-      if (!addresses.length) addresses = localUser.addresses;
-    }
-
+    await supabaseService.updateUserCredentials(userId, { addresses });
     res.status(201).json({ success: true, addresses });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -369,26 +309,10 @@ router.post('/addresses', protect, async (req, res) => {
 router.delete('/addresses/:id', protect, async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
-    let addresses = [];
+    const user = await supabaseService.findUserById(userId);
+    let addresses = (user?.addresses || []).filter(a => String(a._id) !== req.params.id && String(a.id) !== req.params.id);
 
-    if (isDBConnected()) {
-      try {
-        const user = await User.findById(userId);
-        if (user) {
-          user.addresses = user.addresses.filter(a => String(a._id) !== req.params.id);
-          await user.save();
-          addresses = user.addresses;
-        }
-      } catch (e) {}
-    }
-
-    const localUser = localStore.findUserById(userId);
-    if (localUser && localUser.addresses) {
-      localUser.addresses = localUser.addresses.filter(a => String(a._id) !== req.params.id);
-      localStore.saveData();
-      if (!addresses.length) addresses = localUser.addresses;
-    }
-
+    await supabaseService.updateUserCredentials(userId, { addresses });
     res.json({ success: true, addresses });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -400,40 +324,19 @@ router.post('/wishlist/toggle', protect, async (req, res) => {
   try {
     const { productId } = req.body;
     const userId = req.user._id || req.user.id;
+    const user = await supabaseService.findUserById(userId);
+    let wishlist = [...(user?.wishlist || [])];
     let added = false;
-    let wishlist = [];
 
-    if (isDBConnected()) {
-      try {
-        const user = await User.findById(userId);
-        if (user) {
-          const index = user.wishlist.indexOf(productId);
-          if (index > -1) {
-            user.wishlist.splice(index, 1);
-          } else {
-            user.wishlist.push(productId);
-            added = true;
-          }
-          await user.save();
-          wishlist = user.wishlist;
-        }
-      } catch (e) {}
+    const idx = wishlist.indexOf(productId);
+    if (idx > -1) {
+      wishlist.splice(idx, 1);
+    } else {
+      wishlist.push(productId);
+      added = true;
     }
 
-    const localUser = localStore.findUserById(userId);
-    if (localUser) {
-      if (!localUser.wishlist) localUser.wishlist = [];
-      const idx = localUser.wishlist.indexOf(productId);
-      if (idx > -1) {
-        localUser.wishlist.splice(idx, 1);
-      } else {
-        localUser.wishlist.push(productId);
-        added = true;
-      }
-      localStore.saveData();
-      if (!wishlist.length) wishlist = localUser.wishlist;
-    }
-
+    await supabaseService.updateUserCredentials(userId, { wishlist });
     res.json({ success: true, added, wishlist });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

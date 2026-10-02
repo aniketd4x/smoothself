@@ -39,9 +39,9 @@
     },
     {
       "_id": "usr-customer-02",
-      "name": "SmoothSelf Member",
+      "name": "Demo Customer",
       "email": "customer@smoothself.in",
-      "password": "$2b$10$3zwhOl56KvaNuczruA5w4.q1aukVPGa/j9Ux64sB1uC7dbMNZuDP6",
+      "password": "$2b$10$AWX9EEU08a3oZUOBPRkl1.fgNucB3Op91NpWJzHHodO5QbpzxrXHK",
       "role": "customer",
       "phone": "+91 99604 42750",
       "addresses": [],

@@ -1,9 +1,10 @@
+const path = require('path');
 require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const compression = require('compression');
-const path = require('path');
 const connectDB = require('./config/db');
 
 // Disconnected MongoDB; initialize Supabase connection

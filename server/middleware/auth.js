@@ -32,15 +32,8 @@ const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    let user = null;
-
-    if (isDBConnected()) {
-      try {
-        user = await User.findById(decoded.id).select('-password');
-      } catch (e) {
-        // Fallback to localStore
-      }
-    }
+    const supabaseService = require('../services/supabaseService');
+    user = await supabaseService.findUserById(decoded.id);
 
     if (!user) {
       user = localStore.findUserById(decoded.id);

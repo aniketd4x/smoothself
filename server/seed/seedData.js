@@ -31,6 +31,16 @@ const seedAll = async () => {
     const { data: users, error: usersErr } = await supabase.from('users').insert([
       {
         name: 'Store Administrator',
+        email: 'admin@smoothself.in',
+        password: hashedAdminPassword,
+        phone: '+91 99604 42750',
+        role: 'admin',
+        addresses: [],
+        wishlist: [],
+        is_active: true
+      },
+      {
+        name: 'Store Administrator',
         email: 'admin@aurabotanica.com',
         password: hashedAdminPassword,
         phone: '+91 98765 00000',

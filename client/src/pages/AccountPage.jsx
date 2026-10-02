@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { User, Package, MapPin, LogOut, Plus, Trash2, CheckCircle2 } from 'lucide-react';
+import { User, Package, MapPin, LogOut, Plus, Trash2, CheckCircle2, ShieldCheck, Lock, Mail, Key, Eye, EyeOff, Phone } from 'lucide-react';
 
 const AccountPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, token, loginUser, logoutUser, showToast } = useApp();
+  const { user, token, loginUser, logoutUser, updateUser, showToast } = useApp();
 
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || (user ? 'orders' : 'login'));
   const [authMode, setAuthMode] = useState(searchParams.get('tab') === 'register' ? 'register' : 'login');
@@ -16,6 +16,18 @@ const AccountPage = () => {
   // Register form state
   const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Profile and security form state
+  const [profileForm, setProfileForm] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [showProfilePassword, setShowProfilePassword] = useState(false);
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   // Orders and addresses state
   const [orders, setOrders] = useState([]);
@@ -70,6 +82,100 @@ const AccountPage = () => {
       }
     }
   }, [user, token]);
+
+  // Sync profile form when user object updates
+  useEffect(() => {
+    if (user) {
+      setProfileForm(prev => ({
+        ...prev,
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || ''
+      }));
+    }
+  }, [user]);
+
+  // Handle customer profile, email, and password update
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    if (!token && !user) return;
+
+    if (profileForm.newPassword) {
+      if (profileForm.newPassword.length < 6) {
+        showToast('New password must be at least 6 characters long', 'error');
+        return;
+      }
+      if (profileForm.newPassword !== profileForm.confirmPassword) {
+        showToast('New password and confirm password do not match', 'error');
+        return;
+      }
+      if (!profileForm.currentPassword) {
+        showToast('Please enter your current password to set a new password', 'error');
+        return;
+      }
+    }
+
+    setIsUpdatingProfile(true);
+    try {
+      const payload = {
+        name: profileForm.name.trim(),
+        email: profileForm.email.trim().toLowerCase(),
+        phone: profileForm.phone ? profileForm.phone.trim() : '',
+      };
+      if (profileForm.newPassword) {
+        payload.password = profileForm.newPassword;
+        payload.currentPassword = profileForm.currentPassword;
+      }
+
+      let resData = null;
+      try {
+        const res = await fetch('/api/auth/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          resData = await res.json();
+        }
+      } catch (netErr) {
+        console.warn('Network error updating profile:', netErr);
+      }
+
+      if (resData && resData.success) {
+        updateUser(resData.user, resData.token);
+        setProfileForm(prev => ({
+          ...prev,
+          name: resData.user.name,
+          email: resData.user.email,
+          phone: resData.user.phone || '',
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        }));
+        showToast('Profile and credentials updated successfully!');
+      } else if (resData && !resData.success) {
+        showToast(resData.message || 'Failed to update credentials', 'error');
+      } else {
+        // Fallback for offline mode
+        const updatedLocal = {
+          ...user,
+          name: payload.name,
+          email: payload.email,
+          phone: payload.phone
+        };
+        updateUser(updatedLocal, token);
+        showToast('Profile updated locally.');
+      }
+    } catch (err) {
+      showToast('Error updating profile: ' + err.message, 'error');
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -432,11 +538,11 @@ const AccountPage = () => {
           </button>
         </div>
 
-        {/* Dashboard Tabs (Orders vs Addresses) */}
-        <div className="flex space-x-4 border-b border-brand-border mb-8">
+        {/* Dashboard Tabs (Orders vs Addresses vs Profile & Security) */}
+        <div className="flex space-x-4 border-b border-brand-border mb-8 overflow-x-auto">
           <button
             onClick={() => setActiveTab('orders')}
-            className={`pb-3 text-sm font-semibold border-b-2 transition ${
+            className={`pb-3 text-sm font-semibold border-b-2 whitespace-nowrap transition ${
               activeTab === 'orders'
                 ? 'border-brand-primary text-brand-primary'
                 : 'border-transparent text-brand-muted hover:text-brand-text'
@@ -446,13 +552,24 @@ const AccountPage = () => {
           </button>
           <button
             onClick={() => setActiveTab('addresses')}
-            className={`pb-3 text-sm font-semibold border-b-2 transition ${
+            className={`pb-3 text-sm font-semibold border-b-2 whitespace-nowrap transition ${
               activeTab === 'addresses'
                 ? 'border-brand-primary text-brand-primary'
                 : 'border-transparent text-brand-muted hover:text-brand-text'
             }`}
           >
             Saved Addresses ({addresses.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`pb-3 text-sm font-semibold border-b-2 whitespace-nowrap transition flex items-center space-x-1.5 ${
+              activeTab === 'profile'
+                ? 'border-brand-primary text-brand-primary'
+                : 'border-transparent text-brand-muted hover:text-brand-text'
+            }`}
+          >
+            <ShieldCheck size={16} />
+            <span>Profile & Security</span>
           </button>
         </div>
 
@@ -640,6 +757,165 @@ const AccountPage = () => {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* TAB 3: PROFILE & SECURITY (CHANGE EMAIL AND PASSWORD) */}
+        {activeTab === 'profile' && (
+          <div className="max-w-2xl bg-white p-6 sm:p-8 rounded-2xl border border-brand-border shadow-sm space-y-6">
+            <div className="border-b border-brand-border pb-4">
+              <h2 className="font-serif text-xl font-bold text-brand-primary flex items-center space-x-2">
+                <ShieldCheck size={22} className="text-brand-primary" />
+                <span>Account Credentials & Security</span>
+              </h2>
+              <p className="text-xs text-brand-muted mt-1">
+                Update your personal details, registered email address, and account password.
+              </p>
+            </div>
+
+            <form onSubmit={handleUpdateProfile} className="space-y-5">
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-brand-muted">
+                  Personal & Contact Details
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-brand-text mb-1">
+                      Full Name *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        required
+                        value={profileForm.name}
+                        onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                        placeholder="Your full name"
+                        className="w-full pl-9 pr-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-xs font-medium focus:outline-none focus:border-brand-primary"
+                      />
+                      <User size={15} className="absolute left-3 top-3 text-brand-muted" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-brand-text mb-1">
+                      Phone Number
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="tel"
+                        value={profileForm.phone}
+                        onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                        placeholder="+91 99999 99999"
+                        className="w-full pl-9 pr-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-xs font-medium focus:outline-none focus:border-brand-primary"
+                      />
+                      <Phone size={15} className="absolute left-3 top-3 text-brand-muted" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-brand-text mb-1">
+                    Email Address (Login ID) *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      required
+                      value={profileForm.email}
+                      onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                      placeholder="e.g. customer@example.com"
+                      className="w-full pl-9 pr-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-xs font-medium focus:outline-none focus:border-brand-primary"
+                    />
+                    <Mail size={15} className="absolute left-3 top-3 text-brand-muted" />
+                  </div>
+                  <p className="text-[11px] text-brand-muted mt-1">
+                    Changing this will update the email you use to sign into SmoothSelf.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-brand-border space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-brand-muted flex items-center space-x-1.5">
+                    <Lock size={14} className="text-brand-primary" />
+                    <span>Change Password</span>
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowProfilePassword(!showProfilePassword)}
+                    className="text-xs text-brand-muted hover:text-brand-primary inline-flex items-center space-x-1"
+                  >
+                    {showProfilePassword ? <EyeOff size={13} /> : <Eye size={13} />}
+                    <span>{showProfilePassword ? 'Hide Passwords' : 'Show Passwords'}</span>
+                  </button>
+                </div>
+                <p className="text-[11px] text-brand-muted">
+                  Leave the password fields empty if you do not want to change your password.
+                </p>
+
+                <div>
+                  <label className="block text-xs font-semibold text-brand-text mb-1">
+                    Current Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showProfilePassword ? 'text' : 'password'}
+                      value={profileForm.currentPassword}
+                      onChange={(e) => setProfileForm({ ...profileForm, currentPassword: e.target.value })}
+                      placeholder="Enter current password to authorize change"
+                      className="w-full pl-9 pr-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-xs focus:outline-none focus:border-brand-primary"
+                    />
+                    <Key size={15} className="absolute left-3 top-3 text-brand-muted" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-brand-text mb-1">
+                      New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showProfilePassword ? 'text' : 'password'}
+                        value={profileForm.newPassword}
+                        onChange={(e) => setProfileForm({ ...profileForm, newPassword: e.target.value })}
+                        placeholder="At least 6 characters"
+                        className="w-full pl-9 pr-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-xs focus:outline-none focus:border-brand-primary"
+                      />
+                      <Lock size={15} className="absolute left-3 top-3 text-brand-muted" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-brand-text mb-1">
+                      Confirm New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showProfilePassword ? 'text' : 'password'}
+                        value={profileForm.confirmPassword}
+                        onChange={(e) => setProfileForm({ ...profileForm, confirmPassword: e.target.value })}
+                        placeholder="Re-enter new password"
+                        className="w-full pl-9 pr-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-xs focus:outline-none focus:border-brand-primary"
+                      />
+                      <Lock size={15} className="absolute left-3 top-3 text-brand-muted" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isUpdatingProfile}
+                  className="px-6 py-3 bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold rounded-lg shadow transition disabled:opacity-60 flex items-center space-x-2"
+                >
+                  <ShieldCheck size={16} />
+                  <span>{isUpdatingProfile ? 'Saving Changes...' : 'Save Profile & Security'}</span>
+                </button>
+              </div>
+            </form>
           </div>
         )}
 

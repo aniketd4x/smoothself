@@ -514,6 +514,110 @@ async function deleteCoupon(id) {
   return true;
 }
 
+// --- USERS & AUTH ---
+
+function normalizeUser(u) {
+  if (!u) return null;
+  return {
+    ...u,
+    _id: u.id || u._id,
+    id: u.id || u._id,
+    name: u.name,
+    email: u.email,
+    password: u.password,
+    phone: u.phone || '',
+    role: u.role || 'customer',
+    addresses: u.addresses || [],
+    wishlist: u.wishlist || [],
+    isActive: u.is_active !== undefined ? Boolean(u.is_active) : (u.isActive !== undefined ? Boolean(u.isActive) : true),
+    createdAt: u.created_at || u.createdAt || new Date().toISOString()
+  };
+}
+
+async function findUserByEmail(email) {
+  if (!email) return null;
+  const cleanEmail = email.trim().toLowerCase();
+  const sb = getSupabase();
+  if (isSupabaseConnected() && sb) {
+    try {
+      const { data, error } = await sb.from('users').select('*').ilike('email', cleanEmail).maybeSingle();
+      if (!error && data) return normalizeUser(data);
+    } catch (e) {}
+  }
+  const local = localStore.findUserByEmail(cleanEmail);
+  return normalizeUser(local);
+}
+
+async function findUserById(id) {
+  if (!id) return null;
+  const sb = getSupabase();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  if (isSupabaseConnected() && sb && isUuid) {
+    try {
+      const { data, error } = await sb.from('users').select('*').eq('id', id).maybeSingle();
+      if (!error && data) return normalizeUser(data);
+    } catch (e) {}
+  }
+  const local = localStore.findUserById(id);
+  return normalizeUser(local);
+}
+
+async function updateUserCredentials(id, { name, email, phone, password }) {
+  const bcrypt = require('bcryptjs');
+  const sb = getSupabase();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+  const cleanEmail = email ? email.trim().toLowerCase() : undefined;
+
+  // Check email uniqueness if email is changing
+  if (cleanEmail) {
+    const existing = await findUserByEmail(cleanEmail);
+    if (existing && String(existing.id) !== String(id) && String(existing._id) !== String(id)) {
+      throw new Error('This email address is already associated with another account.');
+    }
+  }
+
+  const supabaseUpdates = {};
+  if (name) supabaseUpdates.name = name.trim();
+  if (cleanEmail) supabaseUpdates.email = cleanEmail;
+  if (phone !== undefined) supabaseUpdates.phone = phone.trim();
+  if (password && password.trim()) {
+    const salt = bcrypt.genSaltSync(10);
+    supabaseUpdates.password = bcrypt.hashSync(password.trim(), salt);
+  }
+
+  let updated = null;
+  if (isSupabaseConnected() && sb) {
+    try {
+      let query = sb.from('users').update(supabaseUpdates);
+      if (isUuid) {
+        query = query.eq('id', id);
+      } else {
+        query = query.eq('email', cleanEmail || '');
+      }
+      const { data, error } = await query.select().maybeSingle();
+      if (!error && data) {
+        updated = normalizeUser(data);
+      }
+    } catch (e) {
+      console.warn('[Supabase updateUserCredentials error]', e.message);
+    }
+  }
+
+  const localUpdated = localStore.updateUser(id, {
+    name,
+    email: cleanEmail,
+    phone,
+    password: password && password.trim() ? password.trim() : undefined
+  });
+
+  if (localUpdated && !updated) {
+    updated = normalizeUser(localUpdated);
+  }
+
+  return updated;
+}
+
 module.exports = {
   normalizeProduct,
   normalizeCategory,
@@ -521,6 +625,7 @@ module.exports = {
   normalizeOrder,
   normalizeReview,
   normalizeSetting,
+  normalizeUser,
   getProducts,
   getProductByIdOrSlug,
   createProduct,
@@ -532,5 +637,8 @@ module.exports = {
   deleteCategory,
   getCoupons,
   createCoupon,
-  deleteCoupon
+  deleteCoupon,
+  findUserByEmail,
+  findUserById,
+  updateUserCredentials
 };
