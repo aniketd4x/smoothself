@@ -35,6 +35,7 @@ app.use('/api/faqs', require('./routes/faqRoutes'));
 app.use('/api/settings', require('./routes/settingRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/upload', require('./routes/uploadRoutes'));
+app.use('/api/razorpay', require('./routes/razorpayRoutes'));
 
 // Serve uploaded files statically
 const uploadsPath = path.join(__dirname, '../uploads');

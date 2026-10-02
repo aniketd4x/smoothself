@@ -100,7 +100,7 @@ const CheckoutPage = () => {
 
     setIsSubmitting(true);
     try {
-      // Build order payload
+      // Build shared order payload
       const orderPayload = {
         customerDetails: {
           name: formData.name.trim(),
@@ -139,6 +139,100 @@ const CheckoutPage = () => {
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
+      // ── ONLINE PAYMENT via Razorpay ──────────────────────────────────────
+      if (paymentMethod === 'ONLINE') {
+        // 1. Create a Razorpay order on the backend
+        const rzpOrderRes = await fetch('/api/razorpay/create-order', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ amount: cartTotal, currency: 'INR', receipt: `ss_${Date.now()}` })
+        });
+        const rzpOrderData = await rzpOrderRes.json();
+
+        if (!rzpOrderData.success) {
+          showToast(rzpOrderData.message || 'Could not initiate payment. Please try again.', 'error');
+          setIsSubmitting(false);
+          return;
+        }
+
+        // 2. Open the Razorpay checkout popup
+        const rzpOptions = {
+          key: rzpOrderData.keyId,
+          amount: rzpOrderData.amount,
+          currency: rzpOrderData.currency,
+          name: 'SmoothSelf',
+          description: `Order of ${cart.length} item(s)`,
+          order_id: rzpOrderData.orderId,
+          prefill: {
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            contact: formData.phone.trim()
+          },
+          theme: { color: '#6b3fa0' },
+          handler: async (response) => {
+            try {
+              // 3. Verify payment signature on the backend
+              const verifyRes = await fetch('/api/razorpay/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature
+                })
+              });
+              const verifyData = await verifyRes.json();
+
+              if (!verifyData.success) {
+                showToast('Payment verification failed. Please contact support.', 'error');
+                setIsSubmitting(false);
+                return;
+              }
+
+              // 4. Save the order in Supabase as Paid
+              const finalPayload = {
+                ...orderPayload,
+                paymentMethod: 'ONLINE',
+                paymentStatus: 'Paid',
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id
+              };
+
+              const orderRes = await fetch('/api/orders', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(finalPayload)
+              });
+              const orderData = await orderRes.json();
+
+              if (orderData.success && orderData.order) {
+                confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+                clearCart();
+                showToast('Payment successful! Order placed.');
+                navigate(`/order-success/${orderData.order.orderNumber}`, { state: { order: orderData.order } });
+              } else {
+                showToast(orderData?.message || 'Payment done but order save failed. Contact support with Payment ID: ' + response.razorpay_payment_id, 'error');
+              }
+            } catch (err) {
+              showToast('Error finalizing order: ' + err.message, 'error');
+            } finally {
+              setIsSubmitting(false);
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              showToast('Payment cancelled.', 'error');
+              setIsSubmitting(false);
+            }
+          }
+        };
+
+        const rzp = new window.Razorpay(rzpOptions);
+        rzp.open();
+        return; // setIsSubmitting(false) is handled inside handler/ondismiss
+      }
+
+      // ── CASH ON DELIVERY ─────────────────────────────────────────────────
       let data = null;
       try {
         const res = await fetch('/api/orders', {
@@ -155,14 +249,12 @@ const CheckoutPage = () => {
         console.warn('[Order Network Warning]:', netErr.message);
       }
 
-      // If server responded with success
       if (data && data.success && data.order) {
         confetti({
           particleCount: 120,
           spread: 80,
           origin: { y: 0.6 }
         });
-
         clearCart();
         showToast('Order placed successfully! We are preparing your shipment.');
         navigate(`/order-success/${data.order.orderNumber}`, { state: { order: data.order } });
@@ -217,7 +309,7 @@ const CheckoutPage = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-brand-text mb-1">Phone Number (For Tracking & COD) *</label>
+                    <label className="block text-xs font-semibold text-brand-text mb-1">Phone Number (For Tracking &amp; COD) *</label>
                     <input
                       type="tel"
                       name="phone"
@@ -329,7 +421,7 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              {/* 3. SHIPPING & PAYMENT METHOD */}
+              {/* 3. PAYMENT METHOD */}
               <div className="bg-white p-6 sm:p-8 rounded-xl border border-brand-border shadow-sm">
                 <h3 className="font-serif text-lg sm:text-xl font-bold text-brand-primary mb-4">
                   3. Payment Method
@@ -361,7 +453,7 @@ const CheckoutPage = () => {
                     </div>
                   </label>
 
-                  {/* Instant Online Payment / UPI / Cards */}
+                  {/* Razorpay Online Payment */}
                   <label className={`flex items-start space-x-3 p-4 rounded-xl border cursor-pointer transition ${
                     paymentMethod === 'ONLINE'
                       ? 'border-brand-primary bg-purple-50/40 ring-1 ring-brand-primary'
@@ -378,11 +470,17 @@ const CheckoutPage = () => {
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
                         <CreditCard size={18} className="text-brand-primary" />
-                        <span className="text-sm font-bold text-brand-primary">UPI / Credit & Debit Cards / NetBanking</span>
+                        <span className="text-sm font-bold text-brand-primary">UPI / Credit &amp; Debit Cards / NetBanking</span>
                       </div>
                       <p className="text-xs text-brand-muted mt-0.5">
-                        Instant secure checkout with Google Pay, PhonePe, Paytm, Cards & NetBanking.
+                        Instant secure checkout via Razorpay — Google Pay, PhonePe, Paytm, Cards &amp; NetBanking.
                       </p>
+                      {paymentMethod === 'ONLINE' && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <img src="https://razorpay.com/favicon.png" alt="Razorpay" className="w-4 h-4" />
+                          <span className="text-[10px] text-brand-muted font-medium">Powered by Razorpay · 100% Secure</span>
+                        </div>
+                      )}
                     </div>
                   </label>
                 </div>
@@ -496,13 +594,13 @@ const CheckoutPage = () => {
                   <ShieldCheck size={18} />
                   <span>
                     {isSubmitting
-                      ? 'Processing Your Order...'
-                      : `Place Order • ₹${cartTotal}`}
+                      ? (paymentMethod === 'ONLINE' ? 'Opening Payment...' : 'Processing Your Order...')
+                      : (paymentMethod === 'ONLINE' ? `Pay Now • ₹${cartTotal}` : `Place Order • ₹${cartTotal}`)}
                   </span>
                 </button>
 
                 <div className="text-center text-[11px] text-brand-muted space-y-1">
-                  <p>🔒 100% Guaranteed Safe & Encrypted Checkout</p>
+                  <p>🔒 100% Guaranteed Safe &amp; Encrypted Checkout</p>
                   <p>7-Day Hassle-Free Replacement for Damaged Items</p>
                 </div>
               </div>
