@@ -14,7 +14,7 @@ export const AppProvider = ({ children }) => {
     standardShippingFee: 50,
     expressShippingFee: 100,
     contactEmail: 'support@smoothself.in',
-    contactPhone: '+91 98765 43210',
+    contactPhone: '+91 99604 42750',
     contactAddress: 'Mumbai, Maharashtra',
     currencySymbol: '₹'
   });

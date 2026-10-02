@@ -183,8 +183,8 @@ const Footer = () => {
             </p>
             <p className="text-sm text-brand-muted mb-4">
               <span className="font-medium text-brand-text">Helpline: </span>
-              <a href={`tel:${settings.contactPhone || '+91 98765 43210'}`} className="hover:text-brand-primary">
-                {settings.contactPhone || '+91 98765 43210'}
+              <a href={`tel:${settings.contactPhone || '+91 99604 42750'}`} className="hover:text-brand-primary">
+                {settings.contactPhone || '+91 99604 42750'}
               </a>
             </p>
             <div className="text-xs text-brand-muted bg-white border border-brand-border p-3 rounded-lg">
