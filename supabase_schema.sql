@@ -180,3 +180,46 @@ create table if not exists public.subscribers (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- ===================================================
+-- 12. Supabase Storage: Product Images Bucket & Policies
+-- Run this to create the product-images bucket with public access
+-- ===================================================
+
+-- Create product-images storage bucket
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'product-images',
+  'product-images',
+  true,
+  10485760, -- 10MB limit
+  array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']
+)
+on conflict (id) do update set public = true;
+
+-- Drop existing policies if any to avoid duplicates
+drop policy if exists "Public Access to product-images" on storage.objects;
+drop policy if exists "Allow Uploads to product-images" on storage.objects;
+drop policy if exists "Allow Updates to product-images" on storage.objects;
+drop policy if exists "Allow Deletes in product-images" on storage.objects;
+
+-- Allow public access to view uploaded images
+create policy "Public Access to product-images"
+on storage.objects for select
+using ( bucket_id = 'product-images' );
+
+-- Allow all uploads into product-images bucket
+create policy "Allow Uploads to product-images"
+on storage.objects for insert
+with check ( bucket_id = 'product-images' );
+
+-- Allow updates in product-images bucket
+create policy "Allow Updates to product-images"
+on storage.objects for update
+using ( bucket_id = 'product-images' );
+
+-- Allow deletes in product-images bucket
+create policy "Allow Deletes in product-images"
+on storage.objects for delete
+using ( bucket_id = 'product-images' );
+
+

@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const { protect, adminOnly } = require('../middleware/auth');
 const { getSupabase } = require('../config/supabase');
 
-// Use memory storage so Vercel's read-only filesystem is not an issue
+// Use memory storage
 const storage = multer.memoryStorage();
 
 // File validation
@@ -27,31 +28,68 @@ const upload = multer({
   fileFilter
 });
 
-const BUCKET = 'product-images'; // Your Supabase Storage bucket name
+const BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'product-images';
 
 /**
- * Upload a single buffer to Supabase Storage and return the public URL.
+ * Save image locally to public/uploads/ as a resilient fallback
  */
-async function uploadToSupabase(buffer, originalName, mimeType) {
-  const sb = getSupabase();
-  if (!sb) throw new Error('Supabase is not configured. Check SUPABASE_URL and SUPABASE_ANON_KEY in .env');
-
+function saveLocally(buffer, originalName) {
   const ext = path.extname(originalName).toLowerCase() || '.jpg';
   const cleanName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 30);
   const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
   const filename = `${cleanName}-${uniqueSuffix}${ext}`;
 
-  const { error } = await sb.storage
-    .from(BUCKET)
-    .upload(filename, buffer, {
-      contentType: mimeType || 'image/jpeg',
-      upsert: false
-    });
+  const publicUploads = path.resolve(__dirname, '../../public/uploads');
+  if (!fs.existsSync(publicUploads)) {
+    fs.mkdirSync(publicUploads, { recursive: true });
+  }
+  fs.writeFileSync(path.join(publicUploads, filename), buffer);
 
-  if (error) throw new Error(`Supabase Storage upload failed: ${error.message}`);
+  const rootUploads = path.resolve(__dirname, '../../uploads');
+  if (fs.existsSync(rootUploads)) {
+    try {
+      fs.writeFileSync(path.join(rootUploads, filename), buffer);
+    } catch (_) {}
+  }
 
-  const { data: publicData } = sb.storage.from(BUCKET).getPublicUrl(filename);
-  return publicData.publicUrl;
+  return `/uploads/${filename}`;
+}
+
+/**
+ * Upload a single buffer to Supabase Storage, with automatic local fallback
+ */
+async function uploadImage(buffer, originalName, mimeType) {
+  const sb = getSupabase();
+
+  if (sb) {
+    try {
+      const ext = path.extname(originalName).toLowerCase() || '.jpg';
+      const cleanName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 30);
+      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+      const filename = `${cleanName}-${uniqueSuffix}${ext}`;
+
+      const { data, error } = await sb.storage
+        .from(BUCKET)
+        .upload(filename, buffer, {
+          contentType: mimeType || 'image/jpeg',
+          upsert: false
+        });
+
+      if (!error && data) {
+        const { data: publicData } = sb.storage.from(BUCKET).getPublicUrl(filename);
+        if (publicData?.publicUrl) {
+          return publicData.publicUrl;
+        }
+      } else {
+        console.warn(`[Storage Warning] Supabase upload failed (${error?.message || 'Unknown error'}). Using local fallback.`);
+      }
+    } catch (err) {
+      console.warn(`[Storage Warning] Supabase upload error: ${err.message}. Using local fallback.`);
+    }
+  }
+
+  // Fallback to reliable local file storage
+  return saveLocally(buffer, originalName);
 }
 
 // POST /api/upload — Single image upload
@@ -60,7 +98,7 @@ router.post('/', protect, adminOnly, upload.single('image'), async (req, res) =>
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No image file provided' });
     }
-    const url = await uploadToSupabase(req.file.buffer, req.file.originalname, req.file.mimetype);
+    const url = await uploadImage(req.file.buffer, req.file.originalname, req.file.mimetype);
     res.json({ success: true, url, filename: path.basename(url), size: req.file.size });
   } catch (error) {
     console.error('[Upload Error]', error.message);
@@ -76,7 +114,7 @@ router.post('/multiple', protect, adminOnly, upload.array('images', 10), async (
     }
 
     const urls = await Promise.all(
-      req.files.map(file => uploadToSupabase(file.buffer, file.originalname, file.mimetype))
+      req.files.map(file => uploadImage(file.buffer, file.originalname, file.mimetype))
     );
 
     res.json({
