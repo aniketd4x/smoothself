@@ -130,7 +130,7 @@ const AdminOrders = () => {
       {/* ORDERS TABLE */}
       <div className="bg-white rounded-2xl border border-brand-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full min-w-[700px] text-left border-collapse text-xs">
             <thead>
               <tr className="bg-brand-surface border-b border-brand-border text-brand-muted uppercase tracking-wider font-semibold">
                 <th className="p-4">Order ID</th>
@@ -203,7 +203,7 @@ const AdminOrders = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedOrder(null)}></div>
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-6 md:p-8 z-10 space-y-6">
+            <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 z-10 space-y-5 max-h-[90vh] overflow-y-auto">
               
               <div className="flex justify-between items-center border-b border-brand-border pb-4">
                 <div>
@@ -305,9 +305,9 @@ const AdminOrders = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-2 pt-2">
-                  <button type="button" onClick={() => setSelectedOrder(null)} className="px-4 py-2 border rounded-lg">Cancel</button>
-                  <button type="submit" disabled={isUpdating} className="px-5 py-2 bg-brand-primary text-white font-bold rounded-lg shadow">
+                <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
+                  <button type="button" onClick={() => setSelectedOrder(null)} className="w-full sm:w-auto px-4 py-2.5 border rounded-lg text-center font-medium">Cancel</button>
+                  <button type="submit" disabled={isUpdating} className="w-full sm:w-auto px-5 py-2.5 bg-brand-primary text-white font-bold rounded-lg shadow text-center">
                     {isUpdating ? 'Updating...' : 'Save Fulfillment'}
                   </button>
                 </div>

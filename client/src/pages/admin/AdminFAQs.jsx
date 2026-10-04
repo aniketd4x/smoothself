@@ -84,7 +84,7 @@ const AdminFAQs = () => {
             setFormData({ question: '', answer: '', category: 'Products', order: faqs.length + 1, isActive: true });
             setActiveModal('create');
           }}
-          className="inline-flex items-center space-x-1.5 px-4 py-2.5 bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold rounded-lg shadow transition"
+          className="inline-flex items-center justify-center space-x-1.5 px-4 py-2.5 bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold rounded-lg shadow transition w-full sm:w-auto"
         >
           <Plus size={16} />
           <span>Add New FAQ</span>
@@ -129,7 +129,7 @@ const AdminFAQs = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setActiveModal(null)}></div>
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl p-6 z-10 space-y-4">
+            <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl p-4 sm:p-6 z-10 space-y-4 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center border-b border-brand-border pb-3">
                 <h3 className="font-serif text-lg font-bold text-brand-primary">
                   {activeModal === 'create' ? 'Add FAQ' : 'Edit FAQ'}
@@ -176,7 +176,7 @@ const AdminFAQs = () => {
                 </div>
 
                 <div className="pt-3 border-t border-brand-border flex justify-end space-x-2">
-                  <button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 border rounded-lg">Cancel</button>
+                  <button type="button" onClick={() => setActiveModal(null)} className="w-full sm:w-auto px-4 py-2.5 border rounded-lg text-center font-medium">Cancel</button>
                   <button type="submit" className="px-5 py-2 bg-brand-primary text-white font-bold rounded-lg shadow">Save FAQ</button>
                 </div>
               </form>

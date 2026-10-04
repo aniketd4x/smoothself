@@ -85,17 +85,17 @@ const AdminDashboard = () => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto">
           <Link
             to="/admin/products"
-            className="inline-flex items-center space-x-1.5 px-4 py-2 bg-brand-primary text-white text-xs font-semibold rounded-lg shadow hover:bg-brand-hover transition"
+            className="inline-flex items-center justify-center space-x-1.5 px-3.5 sm:px-4 py-2.5 bg-brand-primary text-white text-xs font-semibold rounded-lg shadow hover:bg-brand-hover transition flex-1 sm:flex-initial text-center"
           >
             <Plus size={15} />
             <span>Add New Product</span>
           </Link>
           <Link
             to="/admin/orders"
-            className="inline-flex items-center space-x-1.5 px-4 py-2 bg-white border border-brand-border text-brand-primary text-xs font-semibold rounded-lg shadow-sm hover:bg-brand-surface transition"
+            className="inline-flex items-center justify-center space-x-1.5 px-3.5 sm:px-4 py-2.5 bg-white border border-brand-border text-brand-primary text-xs font-semibold rounded-lg shadow-sm hover:bg-brand-surface transition flex-1 sm:flex-initial text-center"
           >
             <span>View All Orders</span>
           </Link>
@@ -103,12 +103,12 @@ const AdminDashboard = () => {
       </div>
 
       {/* METRIC KPI CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         {/* Total Revenue */}
-        <div className="p-6 bg-white rounded-2xl border border-brand-border shadow-sm flex items-center justify-between">
+        <div className="p-3.5 sm:p-5 lg:p-6 bg-white rounded-xl sm:rounded-2xl border border-brand-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
           <div>
             <p className="text-xs font-semibold text-brand-muted uppercase tracking-wider">Total Revenue</p>
-            <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-brand-primary mt-1">
+            <h3 className="font-serif text-lg sm:text-2xl lg:text-3xl font-extrabold text-brand-primary mt-1">
               ₹{stats.totalRevenue?.toLocaleString('en-IN') || 0}
             </h3>
             <p className="text-[11px] text-emerald-600 font-medium mt-1 flex items-center space-x-1">
@@ -116,55 +116,55 @@ const AdminDashboard = () => {
               <span>Live Gross Sales</span>
             </p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-purple-100 text-brand-primary flex items-center justify-center font-bold">
+          <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex-shrink-0 bg-purple-100 text-brand-primary flex items-center justify-center font-bold">
             ₹
           </div>
         </div>
 
         {/* Total Orders */}
-        <div className="p-6 bg-white rounded-2xl border border-brand-border shadow-sm flex items-center justify-between">
+        <div className="p-3.5 sm:p-5 lg:p-6 bg-white rounded-xl sm:rounded-2xl border border-brand-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
           <div>
             <p className="text-xs font-semibold text-brand-muted uppercase tracking-wider">Total Orders</p>
-            <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-brand-primary mt-1">
+            <h3 className="font-serif text-lg sm:text-2xl lg:text-3xl font-extrabold text-brand-primary mt-1">
               {stats.totalOrders || 0}
             </h3>
             <p className="text-[11px] text-brand-muted mt-1">
               {stats.processingOrders || 0} Processing • {stats.deliveredOrders || 0} Delivered
             </p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+          <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex-shrink-0 bg-blue-100 text-blue-700 flex items-center justify-center">
             <ShoppingBag size={22} />
           </div>
         </div>
 
         {/* Active Products */}
-        <div className="p-6 bg-white rounded-2xl border border-brand-border shadow-sm flex items-center justify-between">
+        <div className="p-3.5 sm:p-5 lg:p-6 bg-white rounded-xl sm:rounded-2xl border border-brand-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
           <div>
             <p className="text-xs font-semibold text-brand-muted uppercase tracking-wider">Catalog Products</p>
-            <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-brand-primary mt-1">
+            <h3 className="font-serif text-lg sm:text-2xl lg:text-3xl font-extrabold text-brand-primary mt-1">
               {stats.totalProducts || 0}
             </h3>
             <p className="text-[11px] text-emerald-600 font-medium mt-1">
               All Active & Published
             </p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+          <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex-shrink-0 bg-emerald-100 text-emerald-700 flex items-center justify-center">
             <Package size={22} />
           </div>
         </div>
 
         {/* Low Stock Alerts */}
-        <div className="p-6 bg-white rounded-2xl border border-brand-border shadow-sm flex items-center justify-between">
+        <div className="p-3.5 sm:p-5 lg:p-6 bg-white rounded-xl sm:rounded-2xl border border-brand-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
           <div>
             <p className="text-xs font-semibold text-brand-muted uppercase tracking-wider">Low Stock Alerts</p>
-            <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-rose-600 mt-1">
+            <h3 className="font-serif text-lg sm:text-2xl lg:text-3xl font-extrabold text-rose-600 mt-1">
               {stats.lowStockProducts || 0}
             </h3>
             <p className="text-[11px] text-rose-600 font-medium mt-1">
               Requires Reordering
             </p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center">
+          <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex-shrink-0 bg-rose-100 text-rose-600 flex items-center justify-center">
             <AlertTriangle size={22} />
           </div>
         </div>
@@ -212,7 +212,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full min-w-[620px] text-left border-collapse text-xs">
             <thead>
               <tr className="bg-brand-surface border-b border-brand-border text-brand-muted uppercase tracking-wider font-semibold">
                 <th className="p-4">Order ID</th>

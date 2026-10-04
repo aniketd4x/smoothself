@@ -90,7 +90,7 @@ const AdminCoupons = () => {
 
         <button
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center space-x-1.5 px-4 py-2.5 bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold rounded-lg shadow transition"
+          className="inline-flex items-center justify-center space-x-1.5 px-4 py-2.5 bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold rounded-lg shadow transition w-full sm:w-auto"
         >
           <Plus size={16} />
           <span>Create New Coupon</span>
@@ -99,7 +99,7 @@ const AdminCoupons = () => {
 
       <div className="bg-white rounded-2xl border border-brand-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full min-w-[650px] text-left border-collapse text-xs">
             <thead>
               <tr className="bg-brand-surface border-b border-brand-border text-brand-muted uppercase tracking-wider font-semibold">
                 <th className="p-4">Coupon Code</th>
@@ -152,7 +152,7 @@ const AdminCoupons = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 z-10 space-y-4">
+            <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-4 sm:p-6 z-10 space-y-4 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center border-b border-brand-border pb-3">
                 <h3 className="font-serif text-lg font-bold text-brand-primary">Create Promo Coupon</h3>
                 <button onClick={() => setShowModal(false)}><X size={18} /></button>
@@ -239,7 +239,7 @@ const AdminCoupons = () => {
                 </div>
 
                 <div className="pt-3 border-t border-brand-border flex justify-end space-x-2">
-                  <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg">Cancel</button>
+                  <button type="button" onClick={() => setShowModal(false)} className="w-full sm:w-auto px-4 py-2.5 border rounded-lg text-center font-medium">Cancel</button>
                   <button type="submit" className="px-5 py-2 bg-brand-primary text-white font-bold rounded-lg shadow">
                     Create Coupon
                   </button>

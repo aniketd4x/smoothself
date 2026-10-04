@@ -112,7 +112,7 @@ const AdminSettings = () => {
   return (
     <div className="space-y-8 max-w-4xl pb-16">
       {/* 1. ADMIN CREDENTIALS & SECURITY CARD */}
-      <div className="bg-white p-6 sm:p-8 rounded-2xl border-2 border-brand-primary/20 shadow-md space-y-5">
+      <div className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border-2 border-brand-primary/20 shadow-md space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-brand-border gap-2">
           <div className="flex items-center space-x-2.5">
             <div className="w-8 h-8 rounded-lg bg-brand-primary/10 text-brand-primary flex items-center justify-center">
@@ -266,7 +266,7 @@ const AdminSettings = () => {
 
       <form onSubmit={handleSave} className="space-y-8">
         {/* 1. BRAND IDENTITY */}
-        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-brand-border shadow-sm space-y-4">
+        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border border-brand-border shadow-sm space-y-4">
           <h3 className="font-serif text-lg font-bold text-brand-primary border-b border-brand-border pb-3">
             1. Brand Identity & Header
           </h3>
@@ -317,7 +317,7 @@ const AdminSettings = () => {
         </div>
 
         {/* 2. SHIPPING & LOGISTICS */}
-        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-brand-border shadow-sm space-y-4">
+        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border border-brand-border shadow-sm space-y-4">
           <h3 className="font-serif text-lg font-bold text-brand-primary border-b border-brand-border pb-3 flex items-center space-x-2">
             <Truck size={18} />
             <span>2. Shipping Thresholds & Rates</span>
@@ -357,7 +357,7 @@ const AdminSettings = () => {
         </div>
 
         {/* 3. CONTACT & STORE POLICIES */}
-        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-brand-border shadow-sm space-y-4">
+        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border border-brand-border shadow-sm space-y-4">
           <h3 className="font-serif text-lg font-bold text-brand-primary border-b border-brand-border pb-3 flex items-center space-x-2">
             <Mail size={18} />
             <span>3. Support Contact Information</span>
@@ -397,7 +397,7 @@ const AdminSettings = () => {
         </div>
 
         {/* 4. POLICIES */}
-        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-brand-border shadow-sm space-y-4">
+        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border border-brand-border shadow-sm space-y-4">
           <h3 className="font-serif text-lg font-bold text-brand-primary border-b border-brand-border pb-3">
             4. Customer Policies
           </h3>

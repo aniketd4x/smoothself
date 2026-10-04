@@ -71,7 +71,7 @@ const AdminReviews = () => {
 
       <div className="bg-white rounded-2xl border border-brand-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full min-w-[700px] text-left border-collapse text-xs">
             <thead>
               <tr className="bg-brand-surface border-b border-brand-border text-brand-muted uppercase tracking-wider font-semibold">
                 <th className="p-4">Customer</th>
