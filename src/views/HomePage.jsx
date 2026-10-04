@@ -149,13 +149,20 @@ const HomePage = () => {
                 <picture className="w-full h-full">
                   <source
                     media="(max-width: 767px)"
-                    srcSet={mobileImg}
+                    srcSet={mobileImg || desktopImg}
                   />
                   <img
                     src={desktopImg}
                     alt={banner.title}
                     className="w-full h-full object-cover object-center select-none"
                     loading={index === 0 ? 'eager' : 'lazy'}
+                    onError={(e) => {
+                      if (e.currentTarget.src !== desktopImg) {
+                        e.currentTarget.src = desktopImg;
+                      } else {
+                        e.currentTarget.src = heroStrawberryImg;
+                      }
+                    }}
                   />
                 </picture>
                 {/* Adaptive Dark Vignette: vertical on mobile for readability, horizontal on desktop */}
