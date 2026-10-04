@@ -7,8 +7,8 @@ const AdminLogin = () => {
   const { loginUser, showToast } = useApp();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('admin@smoothself.in');
-  const [password, setPassword] = useState('admin123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAdminLogin = async (e) => {
@@ -63,7 +63,7 @@ const AdminLogin = () => {
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="admin@aurabotanica.com"
+                placeholder="admin@smoothself.in"
                 className="w-full pl-10 pr-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-xs focus:outline-none focus:border-brand-primary font-medium"
               />
               <Mail size={16} className="absolute left-3.5 top-3 text-brand-muted" />
@@ -93,13 +93,6 @@ const AdminLogin = () => {
             <span>{isLoading ? 'Verifying Credentials...' : 'Authenticate & Enter Dashboard'}</span>
             <ArrowRight size={15} />
           </button>
-
-          {/* Quick Credential Helper */}
-          <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200 text-[11px] text-purple-900 space-y-1">
-            <p className="font-bold">Default Superadmin Credentials:</p>
-            <p>Email: <code className="font-mono">admin@smoothself.in</code></p>
-            <p>Password: <code className="font-mono">admin123456</code></p>
-          </div>
 
           <div className="text-center pt-3">
             <Link to="/" className="text-xs text-brand-muted hover:text-brand-primary transition">

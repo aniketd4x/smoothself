@@ -297,13 +297,6 @@ const AccountPage = () => {
                   Create one now
                 </button>
               </div>
-
-              {/* Demo accounts hint */}
-              <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200 text-[11px] text-purple-900 space-y-1">
-                <p className="font-bold">Demo Customer Credentials:</p>
-                <p>Email: <code className="font-mono">customer@smoothself.in</code></p>
-                <p>Password: <code className="font-mono">customer123456</code></p>
-              </div>
             </form>
           ) : (
             <form onSubmit={handleRegister} className="space-y-4">
