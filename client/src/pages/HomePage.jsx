@@ -14,7 +14,8 @@ import {
   Truck,
   RotateCcw,
   Clock,
-  ShoppingBag
+  ShoppingBag,
+  Leaf
 } from 'lucide-react';
 
 import heroStrawberryImg from '../assets/hero_strawberry.jpg';
@@ -288,13 +289,13 @@ const HomePage = () => {
 
             <div className="flex flex-col items-center text-center p-5 rounded-2xl bg-[#faf9f8] hover:bg-brand-surface border border-brand-border/40 transition duration-300">
               <div className="w-14 h-14 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mb-4 shadow-sm">
-                <RotateCcw size={26} />
+                <Leaf size={26} />
               </div>
               <h3 className="font-serif text-lg font-bold text-brand-primary mb-1.5">
-                30-Day Hassle-Free Returns
+                100% Clean & Botanical
               </h3>
               <p className="text-xs text-brand-muted leading-relaxed">
-                Return or exchange your order within 30 days of delivery. Shop with complete confidence and peace of mind on every order.
+                Free from parabens, sulphates, and harsh chemicals. Pure plant-powered nourishment.
               </p>
             </div>
           </div>

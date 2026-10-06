@@ -573,7 +573,7 @@ const ProductDetailPage = () => {
                   <div className="mt-3 text-xs sm:text-sm text-brand-muted leading-relaxed space-y-2 animate-fade-in">
                     <p>• <strong>Shipping:</strong> Weight-based shipping calculated at checkout. Free shipping on orders above ₹450.</p>
                     <p>• <strong>Delivery Timelines:</strong> 2 to 5 business days across India.</p>
-                    <p>• <strong>30-Day Hassle-Free Returns:</strong> Return or exchange your order within 30 days of delivery. Shop with complete confidence and peace of mind on every order.</p>
+                    <p>• <strong>100% Clean & Botanical:</strong> Free from parabens, sulphates, and harsh chemicals. Pure plant-powered nourishment.</p>
                   </div>
                 )}
               </div>
