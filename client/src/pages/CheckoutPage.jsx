@@ -36,7 +36,7 @@ const CheckoutPage = () => {
   });
 
   const [shippingMethod, setShippingMethod] = useState('Standard Delivery');
-  const [paymentMethod, setPaymentMethod] = useState('COD');
+  const [paymentMethod, setPaymentMethod] = useState('ONLINE');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
@@ -309,7 +309,7 @@ const CheckoutPage = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-brand-text mb-1">Phone Number (For Tracking &amp; COD) *</label>
+                    <label className="block text-xs font-semibold text-brand-text mb-1">Phone Number (For Order Tracking &amp; Updates) *</label>
                     <input
                       type="tel"
                       name="phone"
@@ -428,30 +428,27 @@ const CheckoutPage = () => {
                 </h3>
                 
                 <div className="space-y-3">
-                  {/* COD */}
-                  <label className={`flex items-start space-x-3 p-4 rounded-xl border cursor-pointer transition ${
-                    paymentMethod === 'COD'
-                      ? 'border-brand-primary bg-purple-50/40 ring-1 ring-brand-primary'
-                      : 'border-brand-border hover:bg-brand-surface'
-                  }`}>
+                  {/* COD (Disabled) */}
+                  <div className="flex items-start space-x-3 p-4 rounded-xl border border-dashed border-gray-200 bg-gray-50/80 opacity-60 cursor-not-allowed">
                     <input
                       type="radio"
                       name="paymentMethod"
                       value="COD"
-                      checked={paymentMethod === 'COD'}
-                      onChange={() => setPaymentMethod('COD')}
-                      className="mt-1 text-brand-primary focus:ring-brand-primary"
+                      disabled
+                      checked={false}
+                      className="mt-1 text-gray-400 cursor-not-allowed"
                     />
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
-                        <Banknote size={18} className="text-brand-primary" />
-                        <span className="text-sm font-bold text-brand-primary">Cash on Delivery (COD)</span>
+                        <Banknote size={18} className="text-gray-400" />
+                        <span className="text-sm font-semibold text-gray-500">Cash on Delivery (COD)</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">Disabled</span>
                       </div>
-                      <p className="text-xs text-brand-muted mt-0.5">
-                        Pay with cash or UPI on your doorstep upon delivery. Zero extra fee.
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Cash on Delivery is currently disabled. Please checkout securely via online payment.
                       </p>
                     </div>
-                  </label>
+                  </div>
 
                   {/* Razorpay Online Payment */}
                   <label className={`flex items-start space-x-3 p-4 rounded-xl border cursor-pointer transition ${

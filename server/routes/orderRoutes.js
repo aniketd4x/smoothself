@@ -52,6 +52,10 @@ router.post('/', optionalAuth, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please provide full delivery address (street, city, pincode)' });
     }
 
+    if (paymentMethod === 'COD') {
+      return res.status(400).json({ success: false, message: 'Cash on Delivery (COD) is currently disabled. Please select online payment.' });
+    }
+
     // Verify stock and deduct in Supabase
     for (const item of orderItems) {
       const prodId = item.product || item.id || item._id;

@@ -181,12 +181,6 @@ const Footer = () => {
                 {settings.contactEmail || 'support@smoothself.in'}
               </a>
             </p>
-            <p className="text-sm text-brand-muted mb-4">
-              <span className="font-medium text-brand-text">Helpline: </span>
-              <a href={`tel:${settings.contactPhone || '+91 99604 42750'}`} className="hover:text-brand-primary">
-                {settings.contactPhone || '+91 99604 42750'}
-              </a>
-            </p>
             <div className="text-xs text-brand-muted bg-white border border-brand-border p-3 rounded-lg">
               <p className="font-medium text-brand-text mb-1">Customer Support Hours:</p>
               <p>Monday – Saturday: 10:00 AM – 7:00 PM IST</p>
@@ -215,8 +209,7 @@ const Footer = () => {
             <span className="px-2.5 py-1 bg-brand-surface rounded border border-brand-border font-medium">Visa</span>
             <span className="px-2.5 py-1 bg-brand-surface rounded border border-brand-border font-medium">Mastercard</span>
             <span className="px-2.5 py-1 bg-brand-surface rounded border border-brand-border font-medium">NetBanking</span>
-            <span className="px-2.5 py-1 bg-brand-surface rounded border border-brand-border font-medium">COD</span>
-          </div>
+            </div>
         </div>
       </div>
     </footer>

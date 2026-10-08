@@ -12,7 +12,7 @@ const settingSchema = new mongoose.Schema({
   expressShippingFee: { type: Number, default: 100 },
   taxPercentage: { type: Number, default: 0 }, // Prices are tax included
   contactEmail: { type: String, default: 'support@smoothself.in' },
-  contactPhone: { type: String, default: '+91 99604 42750' },
+  contactPhone: { type: String, default: '' },
   contactAddress: { type: String, default: 'Mumbai, Maharashtra' },
   currency: { type: String, default: 'INR' },
   currencySymbol: { type: String, default: '₹' },

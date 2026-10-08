@@ -176,10 +176,6 @@ const PrivacyPolicyPage = () => {
                 <span>Support Email: <a href={`mailto:${supportEmail}`} className="text-brand-primary underline">{supportEmail}</a></span>
               </div>
               <div className="flex items-center space-x-2 text-brand-text font-semibold">
-                <Phone size={15} className="text-brand-primary" />
-                <span>Helpline / WhatsApp: <a href={`tel:${settings.contactPhone || '+91 99604 42750'}`} className="text-brand-primary underline">{settings.contactPhone || '+91 99604 42750'}</a></span>
-              </div>
-              <div className="flex items-center space-x-2 text-brand-text font-semibold">
                 <MapPin size={15} className="text-brand-primary" />
                 <span>Operating Address: {address}</span>
               </div>

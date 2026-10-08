@@ -15,6 +15,7 @@ import {
   RotateCcw,
   Clock,
   ShoppingBag,
+  CreditCard,
   Leaf
 } from 'lucide-react';
 
@@ -676,9 +677,9 @@ const HomePage = () => {
               <p className="text-[11px] text-gray-300">On all orders above ₹450</p>
             </div>
             <div className="space-y-1">
-              <RotateCcw size={24} className="mx-auto text-purple-300 mb-2" />
-              <p className="text-xs sm:text-sm font-semibold">30-Day Hassle-Free Returns</p>
-              <p className="text-[11px] text-gray-300">Within 30 days of delivery</p>
+              <Sparkles size={24} className="mx-auto text-purple-300 mb-2" />
+              <p className="text-xs sm:text-sm font-semibold">Luxury Formulations</p>
+              <p className="text-[11px] text-gray-300">Pure botanical extracts</p>
             </div>
             <div className="space-y-1">
               <ShieldCheck size={24} className="mx-auto text-purple-300 mb-2" />
@@ -686,9 +687,9 @@ const HomePage = () => {
               <p className="text-[11px] text-gray-300">Dermatologist Tested</p>
             </div>
             <div className="space-y-1">
-              <Clock size={24} className="mx-auto text-purple-300 mb-2" />
-              <p className="text-xs sm:text-sm font-semibold">Cash on Delivery</p>
-              <p className="text-[11px] text-gray-300">Available across all pin codes</p>
+              <CreditCard size={24} className="mx-auto text-purple-300 mb-2" />
+              <p className="text-xs sm:text-sm font-semibold">100% Secure Payments</p>
+              <p className="text-[11px] text-gray-300">UPI, Cards & NetBanking</p>
             </div>
           </div>
         </div>

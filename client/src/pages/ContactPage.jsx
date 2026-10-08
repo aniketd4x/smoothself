@@ -55,16 +55,6 @@ const ContactPage = () => {
               </div>
 
               <div className="flex items-start space-x-3">
-                <Phone size={18} className="text-brand-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-bold text-brand-text">WhatsApp & Helpline</p>
-                  <a href={`tel:${settings.contactPhone || '+91 99604 42750'}`} className="text-brand-primary hover:underline">
-                    {settings.contactPhone || '+91 99604 42750'}
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
                 <Clock size={18} className="text-brand-primary flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold text-brand-text">Operating Hours</p>

@@ -178,12 +178,12 @@ const ShippingPolicyPage = () => {
 
           <section>
             <h2 className="font-serif text-xl font-bold text-brand-primary mb-3">
-              6. Cash on Delivery (COD) Guidelines
+              6. Payment Methods & Online Checkout
             </h2>
             <ul className="list-disc pl-5 space-y-2">
-              <li>Cash on Delivery is available for most serviceable pin codes across India.</li>
+              <li>Cash on Delivery (COD) is currently disabled. All orders require secure online prepaid payment.</li>
               <li>To prevent misrouted packages, an automated confirmation SMS or telephone verification may precede dispatch for first-time COD buyers.</li>
-              <li>Please ensure exact cash or UPI digital payment is ready when the courier delivery executive arrives at your doorstep.</li>
+              <li>We accept all major UPI apps (Google Pay, PhonePe, Paytm), Credit & Debit cards, and NetBanking via Razorpay.</li>
             </ul>
           </section>
 
@@ -204,10 +204,6 @@ const ShippingPolicyPage = () => {
               <div className="flex items-center space-x-2 text-brand-text font-semibold">
                 <Mail size={15} className="text-brand-primary" />
                 <span>Shipping Support Desk: <a href={`mailto:${supportEmail}`} className="text-brand-primary underline">{supportEmail}</a></span>
-              </div>
-              <div className="flex items-center space-x-2 text-brand-text font-semibold">
-                <Phone size={15} className="text-brand-primary" />
-                <span>Helpline / WhatsApp: <a href={`tel:${settings.contactPhone || '+91 99604 42750'}`} className="text-brand-primary underline">{settings.contactPhone || '+91 99604 42750'}</a></span>
               </div>
               <div className="flex items-center space-x-2 text-brand-text font-semibold">
                 <MapPin size={15} className="text-brand-primary" />

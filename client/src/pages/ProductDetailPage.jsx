@@ -482,9 +482,9 @@ const ProductDetailPage = () => {
                   <span className="text-[10px]">Above ₹450 order</span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <RotateCcw size={18} className="text-brand-primary mb-1" />
-                  <span className="font-semibold text-brand-text">30-Day Returns</span>
-                  <span className="text-[10px]">Return or exchange</span>
+                  <CheckCircle size={18} className="text-brand-primary mb-1" />
+                  <span className="font-semibold text-brand-text">Derm Tested</span>
+                  <span className="text-[10px]">Safe for all skin</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <ShieldCheck size={18} className="text-brand-primary mb-1" />
@@ -560,13 +560,13 @@ const ProductDetailPage = () => {
                 )}
               </div>
 
-              {/* Accordion 4: Shipping & Returns */}
+              {/* Accordion 4: Shipping & Delivery */}
               <div className="py-4">
                 <button
                   onClick={() => toggleAccordion('shipping')}
                   className="w-full flex items-center justify-between text-left font-serif text-base font-semibold text-brand-primary"
                 >
-                  <span>Shipping & Returns</span>
+                  <span>Shipping & Delivery</span>
                   {openAccordions.shipping ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                 </button>
                 {openAccordions.shipping && (

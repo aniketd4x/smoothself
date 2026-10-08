@@ -127,7 +127,7 @@ function normalizeSetting(s) {
     standardShippingFee: s.standard_shipping_fee != null ? Number(s.standard_shipping_fee) : (s.standardShippingFee || 50),
     expressShippingFee: s.express_shipping_fee != null ? Number(s.express_shipping_fee) : (s.expressShippingFee || 100),
     contactEmail: s.contact_email || s.contactEmail || 'support@smoothself.in',
-    contactPhone: s.contact_phone || s.contactPhone || '+91 99604 42750',
+    contactPhone: s.contact_phone || s.contactPhone || '',
     contactAddress: s.contact_address || s.contactAddress || 'Mumbai, Maharashtra',
     currencySymbol: s.currency_symbol || s.currencySymbol || '₹',
     updatedAt: s.updated_at || s.updatedAt || new Date().toISOString()
