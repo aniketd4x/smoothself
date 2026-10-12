@@ -1,10 +1,31 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Save, Settings as SettingsIcon, Truck, Mail, ShieldCheck, Lock, User, Key, Eye, EyeOff } from 'lucide-react';
+import {
+  Save,
+  Truck,
+  Mail,
+  ShieldCheck,
+  Lock,
+  User,
+  Key,
+  Eye,
+  EyeOff,
+  Store,
+  FileText,
+} from 'lucide-react';
+import {
+  AdminPageHeader,
+  AdminButton,
+  AdminBadge,
+  AdminInput,
+  AdminTextarea,
+  AdminCheckbox,
+} from './components/AdminUI';
 
 const AdminSettings = () => {
-  const { token, user, updateUser, settings, setSettings, showToast } = useApp();
+  const { token, user, updateUser, settings, setSettings, showToast } =
+    useApp();
   const [formData, setFormData] = useState({ ...settings });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -14,7 +35,7 @@ const AdminSettings = () => {
     email: user?.email || 'admin@aurabotanica.com',
     currentPassword: '',
     newPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isUpdatingCreds, setIsUpdatingCreds] = useState(false);
@@ -27,30 +48,32 @@ const AdminSettings = () => {
 
   useEffect(() => {
     if (user) {
-      setAdminCreds(prev => ({
+      setAdminCreds((prev) => ({
         ...prev,
         name: user.name || prev.name,
-        email: user.email || prev.email
+        email: user.email || prev.email,
       }));
     }
   }, [user]);
 
   const handleSave = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setIsSaving(true);
     try {
       const res = await fetch('/api/settings', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (data.success && data.settings) {
         setSettings(data.settings);
-        showToast('Store settings updated successfully across the entire website!');
+        showToast(
+          'Store settings updated successfully across the entire website!'
+        );
       } else {
         showToast(data.message || 'Error updating settings', 'error');
       }
@@ -65,10 +88,19 @@ const AdminSettings = () => {
     e.preventDefault();
 
     if (adminCreds.newPassword && adminCreds.newPassword.length < 6) {
-      return showToast('New password must be at least 6 characters long', 'error');
+      return showToast(
+        'New password must be at least 6 characters long',
+        'error'
+      );
     }
-    if (adminCreds.newPassword && adminCreds.newPassword !== adminCreds.confirmPassword) {
-      return showToast('New password and confirmation do not match', 'error');
+    if (
+      adminCreds.newPassword &&
+      adminCreds.newPassword !== adminCreds.confirmPassword
+    ) {
+      return showToast(
+        'New password and confirmation do not match',
+        'error'
+      );
     }
 
     setIsUpdatingCreds(true);
@@ -77,14 +109,14 @@ const AdminSettings = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           name: adminCreds.name,
           email: adminCreds.email,
           password: adminCreds.newPassword || undefined,
-          currentPassword: adminCreds.currentPassword || undefined
-        })
+          currentPassword: adminCreds.currentPassword || undefined,
+        }),
       });
 
       const resData = await res.json();
@@ -92,368 +124,377 @@ const AdminSettings = () => {
         if (updateUser) {
           updateUser(resData.user, resData.token);
         }
-        setAdminCreds(prev => ({
+        setAdminCreds((prev) => ({
           ...prev,
           currentPassword: '',
           newPassword: '',
-          confirmPassword: ''
+          confirmPassword: '',
         }));
-        showToast(`Admin credentials updated successfully! Log in with: ${resData.user.email}`);
+        showToast(
+          `Admin credentials updated successfully! Log in with: ${resData.user.email}`
+        );
       } else {
-        showToast(resData.message || 'Failed to update admin credentials', 'error');
+        showToast(
+          resData.message || 'Failed to update admin credentials',
+          'error'
+        );
       }
     } catch (err) {
-      showToast('Network error updating admin credentials: ' + err.message, 'error');
+      showToast(
+        'Network error updating admin credentials: ' + err.message,
+        'error'
+      );
     } finally {
       setIsUpdatingCreds(false);
     }
   };
 
   return (
-    <div className="space-y-8 max-w-4xl pb-16">
+    <div className="space-y-8 max-w-4xl pb-12">
+      {/* TOP PAGE HEADER */}
+      <AdminPageHeader
+        title="Storefront & Brand Settings"
+        subtitle="Manage administrator credentials, brand identity, announcement banner, shipping thresholds, contact details, and legal policies."
+        badge="Configuration"
+        actions={
+          <AdminButton
+            variant="primary"
+            icon={Save}
+            onClick={handleSave}
+            isLoading={isSaving}
+            loadingText="Saving Changes..."
+            className="w-full sm:w-auto"
+          >
+            Save Store Settings
+          </AdminButton>
+        }
+      />
+
       {/* 1. ADMIN CREDENTIALS & SECURITY CARD */}
-      <div className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border-2 border-brand-primary/20 shadow-md space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-brand-border gap-2">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 text-brand-primary flex items-center justify-center">
-              <ShieldCheck size={18} />
+      <div className="bg-white p-5 sm:p-6 md:p-8 rounded-xl border border-[#111111] space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E5E5E5] gap-3">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-[#111111] text-white flex items-center justify-center flex-shrink-0">
+              <ShieldCheck size={19} />
             </div>
             <div>
-              <h2 className="font-serif text-lg font-bold text-brand-primary">
+              <h2 className="text-base sm:text-lg font-semibold text-[#111111]">
                 Administrator Account & Login Credentials
               </h2>
-              <p className="text-xs text-brand-muted">
-                Change the primary administrator email address and login password.
+              <p className="text-xs text-[#6B7280] mt-0.5">
+                Change the primary administrator email address and login
+                password.
               </p>
             </div>
           </div>
-          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 self-start sm:self-center">
+          <AdminBadge variant="success" dot>
             Security Active
-          </span>
+          </AdminBadge>
         </div>
 
-        <form onSubmit={handleUpdateAdminCredentials} className="space-y-4 text-xs">
+        <form onSubmit={handleUpdateAdminCredentials} className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-bold text-brand-text mb-1">
-                Admin Full Name *
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  required
-                  value={adminCreds.name}
-                  onChange={e => setAdminCreds({ ...adminCreds, name: e.target.value })}
-                  className="w-full pl-9 pr-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg font-medium"
-                />
-                <User size={15} className="absolute left-3 top-3 text-brand-muted" />
-              </div>
-            </div>
+            <AdminInput
+              label="Admin Full Name"
+              required
+              icon={User}
+              value={adminCreds.name}
+              onChange={(e) =>
+                setAdminCreds({ ...adminCreds, name: e.target.value })
+              }
+            />
 
-            <div>
-              <label className="block font-bold text-brand-text mb-1">
-                Admin Login Email ID *
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  required
-                  value={adminCreds.email}
-                  onChange={e => setAdminCreds({ ...adminCreds, email: e.target.value })}
-                  className="w-full pl-9 pr-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg font-medium"
-                />
-                <Mail size={15} className="absolute left-3 top-3 text-brand-muted" />
-              </div>
-            </div>
+            <AdminInput
+              label="Admin Login Email ID"
+              type="email"
+              required
+              icon={Mail}
+              value={adminCreds.email}
+              onChange={(e) =>
+                setAdminCreds({ ...adminCreds, email: e.target.value })
+              }
+            />
           </div>
 
-          <div className="pt-2 border-t border-brand-border/60">
-            <p className="font-bold text-brand-text mb-2 flex items-center space-x-1.5 text-xs">
-              <Lock size={14} className="text-brand-primary" />
-              <span>Change Password (Leave blank to keep current password)</span>
+          <div className="pt-4 border-t border-[#E5E5E5] space-y-4">
+            <p className="font-semibold text-[#111111] flex items-center gap-2 text-xs">
+              <Lock size={14} className="text-[#111111]" />
+              <span>
+                Change Password (Leave blank to keep current password)
+              </span>
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block font-medium text-brand-muted mb-1 text-[11px]">
-                  Current Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Verify current password"
-                    value={adminCreds.currentPassword}
-                    onChange={e => setAdminCreds({ ...adminCreds, currentPassword: e.target.value })}
-                    className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                  />
-                </div>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <AdminInput
+                label="Current Password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Verify current password"
+                value={adminCreds.currentPassword}
+                onChange={(e) =>
+                  setAdminCreds({
+                    ...adminCreds,
+                    currentPassword: e.target.value,
+                  })
+                }
+              />
 
-              <div>
-                <label className="block font-medium text-brand-muted mb-1 text-[11px]">
-                  New Password (min 6 chars)
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter new password"
-                    value={adminCreds.newPassword}
-                    onChange={e => setAdminCreds({ ...adminCreds, newPassword: e.target.value })}
-                    className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                  />
-                </div>
-              </div>
+              <AdminInput
+                label="New Password (min 6 chars)"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter new password"
+                value={adminCreds.newPassword}
+                onChange={(e) =>
+                  setAdminCreds({ ...adminCreds, newPassword: e.target.value })
+                }
+              />
 
-              <div>
-                <label className="block font-medium text-brand-muted mb-1 text-[11px]">
-                  Confirm New Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Re-type new password"
-                    value={adminCreds.confirmPassword}
-                    onChange={e => setAdminCreds({ ...adminCreds, confirmPassword: e.target.value })}
-                    className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                  />
-                </div>
-              </div>
+              <AdminInput
+                label="Confirm New Password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Re-type new password"
+                value={adminCreds.confirmPassword}
+                onChange={(e) =>
+                  setAdminCreds({
+                    ...adminCreds,
+                    confirmPassword: e.target.value,
+                  })
+                }
+              />
             </div>
 
-            <div className="flex items-center justify-between mt-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-[11px] text-brand-muted hover:text-brand-primary flex items-center space-x-1"
+                className="min-h-[38px] px-3 py-1.5 rounded-lg border border-[#E5E5E5] bg-[#F5F5F5] text-xs font-medium text-[#111111] hover:border-[#111111] inline-flex items-center justify-center gap-1.5 transition-colors self-start cursor-pointer"
               >
-                {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
-                <span>{showPassword ? 'Hide Passwords' : 'Show Passwords'}</span>
+                {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                <span>
+                  {showPassword ? 'Hide Passwords' : 'Show Passwords'}
+                </span>
               </button>
 
-              <button
+              <AdminButton
                 type="submit"
-                disabled={isUpdatingCreds}
-                className="inline-flex items-center space-x-1.5 px-5 py-2.5 bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold rounded-lg shadow transition disabled:opacity-50"
+                variant="primary"
+                icon={Key}
+                isLoading={isUpdatingCreds}
+                loadingText="Updating..."
+                className="w-full sm:w-auto"
               >
-                <Key size={14} />
-                <span>{isUpdatingCreds ? 'Updating...' : 'Update Admin Credentials'}</span>
-              </button>
+                Update Admin Credentials
+              </AdminButton>
             </div>
           </div>
         </form>
       </div>
 
-      {/* 2. STOREFRONT SETTINGS */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-brand-primary">
-            Storefront & Brand Settings
-          </h1>
-          <p className="text-xs text-brand-muted mt-1">
-            Customize our brand identity, announcement banner, free shipping threshold, contact details, and policies.
-          </p>
-        </div>
-
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="inline-flex items-center space-x-2 px-6 py-2.5 bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold rounded-lg shadow transition self-start sm:self-auto disabled:opacity-50"
-        >
-          <Save size={15} />
-          <span>{isSaving ? 'Saving Changes...' : 'Save Store Settings'}</span>
-        </button>
-      </div>
-
-      <form onSubmit={handleSave} className="space-y-8">
+      {/* 2. STOREFRONT SETTINGS FORM */}
+      <form onSubmit={handleSave} className="space-y-6">
         {/* 1. BRAND IDENTITY */}
-        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border border-brand-border shadow-sm space-y-4">
-          <h3 className="font-serif text-lg font-bold text-brand-primary border-b border-brand-border pb-3">
-            1. Brand Identity & Header
-          </h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div>
-              <label className="block font-bold text-brand-text mb-1">Brand Name *</label>
-              <input
-                type="text"
-                required
-                value={formData.brandName || ''}
-                onChange={e => setFormData({ ...formData, brandName: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg uppercase tracking-wider font-bold"
-              />
+        <div className="bg-white p-5 sm:p-6 md:p-8 rounded-xl border border-[#E5E5E5] space-y-5">
+          <div className="flex items-center gap-2.5 border-b border-[#E5E5E5] pb-3.5">
+            <div className="w-8 h-8 rounded-lg bg-[#F5F5F5] border border-[#E5E5E5] text-[#111111] flex items-center justify-center">
+              <Store size={16} />
             </div>
-
-            <div>
-              <label className="block font-bold text-brand-text mb-1">Brand Tagline</label>
-              <input
-                type="text"
-                value={formData.tagline || ''}
-                onChange={e => setFormData({ ...formData, tagline: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg"
-              />
-            </div>
+            <h3 className="text-base font-semibold text-[#111111]">
+              1. Brand Identity & Header
+            </h3>
           </div>
 
-          <div className="pt-2">
-            <label className="block font-bold text-brand-text mb-1 text-xs">Top Announcement Bar Text</label>
-            <div className="flex gap-4 items-center">
-              <input
-                type="text"
-                value={formData.announcementText || ''}
-                onChange={e => setFormData({ ...formData, announcementText: e.target.value })}
-                className="flex-1 px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-xs"
-              />
-              <label className="flex items-center space-x-2 text-xs font-semibold cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.announcementActive !== false}
-                  onChange={e => setFormData({ ...formData, announcementActive: e.target.checked })}
-                  className="rounded text-brand-primary focus:ring-brand-primary"
-                />
-                <span>Active</span>
-              </label>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <AdminInput
+              label="Brand Name"
+              required
+              value={formData.brandName || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, brandName: e.target.value })
+              }
+              className="uppercase tracking-wider font-semibold"
+            />
+
+            <AdminInput
+              label="Brand Tagline"
+              value={formData.tagline || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, tagline: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="pt-1 space-y-3">
+            <AdminInput
+              label="Top Announcement Bar Text"
+              value={formData.announcementText || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, announcementText: e.target.value })
+              }
+            />
+            <AdminCheckbox
+              label="Display Top Announcement Banner on Storefront"
+              checked={formData.announcementActive !== false}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  announcementActive: e.target.checked,
+                })
+              }
+            />
           </div>
         </div>
 
         {/* 2. SHIPPING & LOGISTICS */}
-        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border border-brand-border shadow-sm space-y-4">
-          <h3 className="font-serif text-lg font-bold text-brand-primary border-b border-brand-border pb-3 flex items-center space-x-2">
-            <Truck size={18} />
-            <span>2. Shipping Thresholds & Rates</span>
-          </h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-            <div>
-              <label className="block font-bold text-brand-text mb-1">Free Shipping Threshold (₹)</label>
-              <input
-                type="number"
-                value={formData.freeShippingThreshold || 450}
-                onChange={e => setFormData({ ...formData, freeShippingThreshold: Number(e.target.value) })}
-                className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg"
-              />
+        <div className="bg-white p-5 sm:p-6 md:p-8 rounded-xl border border-[#E5E5E5] space-y-5">
+          <div className="flex items-center gap-2.5 border-b border-[#E5E5E5] pb-3.5">
+            <div className="w-8 h-8 rounded-lg bg-[#F5F5F5] border border-[#E5E5E5] text-[#111111] flex items-center justify-center">
+              <Truck size={16} />
             </div>
+            <h3 className="text-base font-semibold text-[#111111]">
+              2. Shipping Thresholds & Rates
+            </h3>
+          </div>
 
-            <div>
-              <label className="block font-bold text-brand-text mb-1">Standard Shipping Fee (₹)</label>
-              <input
-                type="number"
-                value={formData.standardShippingFee || 50}
-                onChange={e => setFormData({ ...formData, standardShippingFee: Number(e.target.value) })}
-                className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg"
-              />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <AdminInput
+              label="Free Shipping Threshold (₹)"
+              type="number"
+              value={formData.freeShippingThreshold || 450}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  freeShippingThreshold: Number(e.target.value),
+                })
+              }
+            />
 
-            <div>
-              <label className="block font-bold text-brand-text mb-1">Express Shipping Fee (₹)</label>
-              <input
-                type="number"
-                value={formData.expressShippingFee || 100}
-                onChange={e => setFormData({ ...formData, expressShippingFee: Number(e.target.value) })}
-                className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg"
-              />
-            </div>
+            <AdminInput
+              label="Standard Shipping Fee (₹)"
+              type="number"
+              value={formData.standardShippingFee || 50}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  standardShippingFee: Number(e.target.value),
+                })
+              }
+            />
+
+            <AdminInput
+              label="Express Shipping Fee (₹)"
+              type="number"
+              value={formData.expressShippingFee || 100}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  expressShippingFee: Number(e.target.value),
+                })
+              }
+            />
           </div>
         </div>
 
         {/* 3. CONTACT & STORE POLICIES */}
-        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border border-brand-border shadow-sm space-y-4">
-          <h3 className="font-serif text-lg font-bold text-brand-primary border-b border-brand-border pb-3 flex items-center space-x-2">
-            <Mail size={18} />
-            <span>3. Support Contact Information</span>
-          </h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-            <div>
-              <label className="block font-bold text-brand-text mb-1">Support Email</label>
-              <input
-                type="email"
-                value={formData.contactEmail || ''}
-                onChange={e => setFormData({ ...formData, contactEmail: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg"
-              />
+        <div className="bg-white p-5 sm:p-6 md:p-8 rounded-xl border border-[#E5E5E5] space-y-5">
+          <div className="flex items-center gap-2.5 border-b border-[#E5E5E5] pb-3.5">
+            <div className="w-8 h-8 rounded-lg bg-[#F5F5F5] border border-[#E5E5E5] text-[#111111] flex items-center justify-center">
+              <Mail size={16} />
             </div>
+            <h3 className="text-base font-semibold text-[#111111]">
+              3. Support Contact Information
+            </h3>
+          </div>
 
-            <div>
-              <label className="block font-bold text-brand-text mb-1">Support Phone / WhatsApp</label>
-              <input
-                type="text"
-                value={formData.contactPhone || ''}
-                onChange={e => setFormData({ ...formData, contactPhone: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg"
-              />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <AdminInput
+              label="Support Email"
+              type="email"
+              value={formData.contactEmail || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, contactEmail: e.target.value })
+              }
+            />
 
-            <div>
-              <label className="block font-bold text-brand-text mb-1">Headquarters Location</label>
-              <input
-                type="text"
-                value={formData.contactAddress || ''}
-                onChange={e => setFormData({ ...formData, contactAddress: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg"
-              />
-            </div>
+            <AdminInput
+              label="Support Phone / WhatsApp"
+              value={formData.contactPhone || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, contactPhone: e.target.value })
+              }
+            />
+
+            <AdminInput
+              label="Headquarters Location"
+              value={formData.contactAddress || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, contactAddress: e.target.value })
+              }
+            />
           </div>
         </div>
 
         {/* 4. POLICIES */}
-        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border border-brand-border shadow-sm space-y-4">
-          <h3 className="font-serif text-lg font-bold text-brand-primary border-b border-brand-border pb-3">
-            4. Customer Policies
-          </h3>
-
-          <div className="space-y-4 text-xs">
-            <div>
-              <label className="block font-bold text-brand-text mb-1">Privacy Policy</label>
-              <textarea
-                rows={3}
-                value={formData.privacyPolicy || ''}
-                onChange={e => setFormData({ ...formData, privacyPolicy: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg"
-              />
+        <div className="bg-white p-5 sm:p-6 md:p-8 rounded-xl border border-[#E5E5E5] space-y-5">
+          <div className="flex items-center gap-2.5 border-b border-[#E5E5E5] pb-3.5">
+            <div className="w-8 h-8 rounded-lg bg-[#F5F5F5] border border-[#E5E5E5] text-[#111111] flex items-center justify-center">
+              <FileText size={16} />
             </div>
+            <h3 className="text-base font-semibold text-[#111111]">
+              4. Customer Policies
+            </h3>
+          </div>
 
-            <div>
-              <label className="block font-bold text-brand-text mb-1">Refund & Replacement Policy</label>
-              <textarea
-                rows={3}
-                value={formData.refundPolicy || ''}
-                onChange={e => setFormData({ ...formData, refundPolicy: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg"
-              />
-            </div>
+          <div className="space-y-4">
+            <AdminTextarea
+              label="Privacy Policy"
+              rows={3}
+              value={formData.privacyPolicy || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, privacyPolicy: e.target.value })
+              }
+            />
 
-            <div>
-              <label className="block font-bold text-brand-text mb-1">Shipping Policy</label>
-              <textarea
-                rows={3}
-                value={formData.shippingPolicy || ''}
-                onChange={e => setFormData({ ...formData, shippingPolicy: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg"
-              />
-            </div>
+            <AdminTextarea
+              label="Refund & Replacement Policy"
+              rows={3}
+              value={formData.refundPolicy || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, refundPolicy: e.target.value })
+              }
+            />
 
-            <div>
-              <label className="block font-bold text-brand-text mb-1">Terms of Service</label>
-              <textarea
-                rows={3}
-                value={formData.termsOfService || ''}
-                onChange={e => setFormData({ ...formData, termsOfService: e.target.value })}
-                className="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg"
-              />
-            </div>
+            <AdminTextarea
+              label="Shipping Policy"
+              rows={3}
+              value={formData.shippingPolicy || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, shippingPolicy: e.target.value })
+              }
+            />
+
+            <AdminTextarea
+              label="Terms of Service"
+              rows={3}
+              value={formData.termsOfService || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, termsOfService: e.target.value })
+              }
+            />
           </div>
         </div>
 
         {/* SUBMIT BUTTON */}
-        <div className="flex justify-end">
-          <button
+        <div className="flex justify-end pt-2">
+          <AdminButton
             type="submit"
-            disabled={isSaving}
-            className="px-8 py-3.5 bg-brand-primary hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-lg transition disabled:opacity-50"
+            variant="primary"
+            size="lg"
+            icon={Save}
+            isLoading={isSaving}
+            loadingText="Updating Storefront..."
+            className="w-full sm:w-auto"
           >
-            {isSaving ? 'Updating Storefront...' : 'Save All Store Settings'}
-          </button>
+            Save All Store Settings
+          </AdminButton>
         </div>
       </form>
     </div>

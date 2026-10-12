@@ -1,7 +1,31 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Plus, Edit2, Trash2, Search, Check, X, Package, AlertTriangle, UploadCloud, Image as ImageIcon, Loader2 } from 'lucide-react';
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Search,
+  X,
+  Package,
+  UploadCloud,
+  Image as ImageIcon,
+  Loader2,
+} from 'lucide-react';
+import {
+  AdminPageHeader,
+  AdminButton,
+  AdminBadge,
+  AdminInput,
+  AdminSelect,
+  AdminTextarea,
+  AdminCheckbox,
+  AdminModal,
+  AdminConfirmDialog,
+  AdminEmptyState,
+  AdminLoadingState,
+  AdminPagination,
+} from './components/AdminUI';
 
 const AdminProducts = () => {
   const { token, showToast } = useApp();
@@ -9,6 +33,10 @@ const AdminProducts = () => {
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   // Modal State (null = closed, 'create' = new, or product object = editing)
   const [activeModal, setActiveModal] = useState(null);
@@ -31,7 +59,7 @@ const AdminProducts = () => {
     howToUse: '',
     badges: 'BESTSELLER',
     isFeatured: true,
-    isActive: true
+    isActive: true,
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -40,17 +68,27 @@ const AdminProducts = () => {
   const fetchProductsAndCategories = () => {
     setIsLoading(true);
     Promise.all([
-      fetch('/api/products/admin/all', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
-      fetch('/api/categories/all', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json())
-    ]).then(([prodData, catData]) => {
-      if (prodData.success) setProducts(prodData.products);
-      if (catData.success) {
-        setCategories(catData.categories);
-        if (catData.categories.length > 0 && !formData.category) {
-          setFormData(prev => ({ ...prev, category: (catData.categories[0]._id || catData.categories[0].id) }));
+      fetch('/api/products/admin/all', {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((r) => r.json()),
+      fetch('/api/categories/all', {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((r) => r.json()),
+    ])
+      .then(([prodData, catData]) => {
+        if (prodData.success) setProducts(prodData.products);
+        if (catData.success) {
+          setCategories(catData.categories);
+          if (catData.categories.length > 0 && !formData.category) {
+            setFormData((prev) => ({
+              ...prev,
+              category: catData.categories[0]._id || catData.categories[0].id,
+            }));
+          }
         }
-      }
-    }).catch(console.error).finally(() => setIsLoading(false));
+      })
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
   };
 
   useEffect(() => {
@@ -60,7 +98,7 @@ const AdminProducts = () => {
   const openCreateModal = () => {
     setFormData({
       name: '',
-      category: (categories[0]?._id || categories[0]?.id || ''),
+      category: categories[0]?._id || categories[0]?.id || '',
       price: 249,
       compareAtPrice: 299,
       costPrice: 90,
@@ -75,7 +113,7 @@ const AdminProducts = () => {
       howToUse: '',
       badges: 'BESTSELLER',
       isFeatured: true,
-      isActive: true
+      isActive: true,
     });
     setCustomImageUrl('');
     setActiveModal('create');
@@ -84,9 +122,19 @@ const AdminProducts = () => {
   const openEditModal = (product) => {
     setFormData({
       ...product,
-      category: (product.category?._id || product.category?.id || product.category_id || product.category),
-      images: Array.isArray(product.images) ? [...product.images] : (product.images ? [product.images] : []),
-      badges: Array.isArray(product.badges) ? product.badges.join(', ') : product.badges
+      category:
+        product.category?._id ||
+        product.category?.id ||
+        product.category_id ||
+        product.category,
+      images: Array.isArray(product.images)
+        ? [...product.images]
+        : product.images
+        ? [product.images]
+        : [],
+      badges: Array.isArray(product.badges)
+        ? product.badges.join(', ')
+        : product.badges,
     });
     setCustomImageUrl('');
     setActiveModal(product);
@@ -106,16 +154,19 @@ const AdminProducts = () => {
       const res = await fetch('/api/upload/multiple', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: data
+        body: data,
       });
 
       const resData = await res.json();
       if (resData.success && resData.urls) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          images: [...(Array.isArray(prev.images) ? prev.images : []), ...resData.urls]
+          images: [
+            ...(Array.isArray(prev.images) ? prev.images : []),
+            ...resData.urls,
+          ],
         }));
         showToast(`${resData.urls.length} photo(s) uploaded successfully!`);
       } else {
@@ -130,17 +181,22 @@ const AdminProducts = () => {
   };
 
   const handleRemoveImage = (indexToRemove) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      images: (Array.isArray(prev.images) ? prev.images : []).filter((_, idx) => idx !== indexToRemove)
+      images: (Array.isArray(prev.images) ? prev.images : []).filter(
+        (_, idx) => idx !== indexToRemove
+      ),
     }));
   };
 
   const handleAddCustomUrl = () => {
     if (!customImageUrl.trim()) return;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      images: [...(Array.isArray(prev.images) ? prev.images : []), customImageUrl.trim()]
+      images: [
+        ...(Array.isArray(prev.images) ? prev.images : []),
+        customImageUrl.trim(),
+      ],
     }));
     setCustomImageUrl('');
     showToast('Image URL added');
@@ -158,14 +214,26 @@ const AdminProducts = () => {
       lowStockThreshold: Number(formData.lowStockThreshold),
       images: Array.isArray(formData.images)
         ? formData.images.filter(Boolean)
-        : (typeof formData.images === 'string' ? formData.images.split(',').map(s => s.trim()).filter(Boolean) : []),
-      badges: typeof formData.badges === 'string'
-        ? formData.badges.split(',').map(s => s.trim()).filter(Boolean)
-        : formData.badges
+        : typeof formData.images === 'string'
+        ? formData.images
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+      badges:
+        typeof formData.badges === 'string'
+          ? formData.badges
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : formData.badges,
     };
 
     try {
-      const editId = activeModal !== 'create' ? (activeModal?._id || activeModal?.id) : null;
+      const editId =
+        activeModal !== 'create'
+          ? activeModal?._id || activeModal?.id
+          : null;
       const isEdit = Boolean(editId);
       const url = isEdit ? `/api/products/${editId}` : '/api/products';
       const method = isEdit ? 'PUT' : 'POST';
@@ -174,14 +242,16 @@ const AdminProducts = () => {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       const resData = await res.json();
       if (resData.success) {
-        showToast(isEdit ? 'Product updated successfully!' : 'New product created!');
+        showToast(
+          isEdit ? 'Product updated successfully!' : 'New product created!'
+        );
         setActiveModal(null);
         fetchProductsAndCategories();
       } else {
@@ -196,28 +266,42 @@ const AdminProducts = () => {
 
   const confirmDeleteProduct = async () => {
     if (!deleteTarget) return;
-    const productId = deleteTarget._id || deleteTarget.id || deleteTarget.slug;
+    const productId =
+      deleteTarget._id || deleteTarget.id || deleteTarget.slug;
     setIsDeleting(true);
 
     try {
       const res = await fetch(`/api/products/${productId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       let resData = null;
       try {
         resData = await res.json();
-      } catch (e) {
-        resData = { success: false, message: 'Server returned non-JSON response' };
+      } catch {
+        resData = {
+          success: false,
+          message: 'Server returned non-JSON response',
+        };
       }
 
       if (res.ok && resData && resData.success) {
         showToast(`"${deleteTarget.name}" deleted successfully!`);
-        setProducts(prev => prev.filter(p => (p._id || p.id) !== (deleteTarget._id || deleteTarget.id) && p.slug !== deleteTarget.slug));
+        setProducts((prev) =>
+          prev.filter(
+            (p) =>
+              (p._id || p.id) !== (deleteTarget._id || deleteTarget.id) &&
+              p.slug !== deleteTarget.slug
+          )
+        );
         setDeleteTarget(null);
         fetchProductsAndCategories();
       } else {
-        showToast(resData?.message || `Failed to delete product (Status ${res.status})`, 'error');
+        showToast(
+          resData?.message ||
+            `Failed to delete product (Status ${res.status})`,
+          'error'
+        );
       }
     } catch (err) {
       showToast('Error deleting product: ' + err.message, 'error');
@@ -233,464 +317,703 @@ const AdminProducts = () => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ stock: newStock })
+        body: JSON.stringify({ stock: newStock }),
       });
       const resData = await res.json();
       if (resData.success) {
-        setProducts(prev => prev.map(p => (p._id || p.id) === productId ? { ...p, stock: newStock } : p));
+        setProducts((prev) =>
+          prev.map((p) =>
+            (p._id || p.id) === productId ? { ...p, stock: newStock } : p
+          )
+        );
       }
     } catch {
       showToast('Failed to update stock', 'error');
     }
   };
 
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.sku?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = products.filter((p) => {
+    const matchesSearch =
+      p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.sku?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const prodCatId =
+      p.category?._id || p.category?.id || p.category_id || p.category;
+    const matchesCategory =
+      categoryFilter === 'all' || String(prodCatId) === String(categoryFilter);
+
+    const isLowStock =
+      (Number(p.stock) || 0) <= (Number(p.lowStockThreshold) || 10);
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'active' && p.isActive) ||
+      (statusFilter === 'draft' && !p.isActive) ||
+      (statusFilter === 'low' && isLowStock);
+
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter, statusFilter]);
 
   return (
     <div className="space-y-6">
       {/* Header & Add Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-brand-primary">
-            Products Catalog & Inventory
-          </h1>
-          <p className="text-xs text-brand-muted mt-1">
-            Manage formulations, pricing, badges, images, and live warehouse inventory.
-          </p>
+      <AdminPageHeader
+        title="Products Catalog & Inventory"
+        subtitle="Manage formulations, pricing, badges, images, and live warehouse inventory."
+        badge={`${products.length} Total`}
+        actions={
+          <AdminButton
+            variant="primary"
+            icon={Plus}
+            onClick={openCreateModal}
+            className="w-full sm:w-auto"
+          >
+            Add New Product
+          </AdminButton>
+        }
+      />
+
+      {/* Search & Filters Bar */}
+      <div className="bg-white p-4 rounded-xl border border-[#E5E5E5] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        <div className="relative flex-1">
+          <Search
+            size={16}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none"
+          />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by product name, SKU, or keyword..."
+            className="w-full min-h-[42px] pl-10 pr-4 py-2 bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg text-[13px] text-[#111111] placeholder:text-[#6B7280] focus:outline-none focus:bg-white focus:border-[#111111] transition-colors"
+          />
         </div>
 
-        <button
-          onClick={openCreateModal}
-          className="inline-flex items-center justify-center space-x-1.5 px-4 py-2.5 bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold rounded-lg shadow transition w-full sm:w-auto"
-        >
-          <Plus size={16} />
-          <span>Add New Product</span>
-        </button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            aria-label="Filter by category"
+            className="min-h-[42px] px-3.5 py-2 bg-white border border-[#E5E5E5] rounded-lg text-xs font-medium text-[#111111] focus:outline-none focus:border-[#111111]"
+          >
+            <option value="all">All Categories</option>
+            {categories.map((c) => (
+              <option key={c._id || c.id} value={c._id || c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+
+          <div className="flex items-center gap-1 bg-[#F5F5F5] p-1 rounded-lg border border-[#E5E5E5] overflow-x-auto">
+            {[
+              { id: 'all', label: 'All' },
+              { id: 'active', label: 'Active' },
+              { id: 'low', label: 'Low Stock' },
+              { id: 'draft', label: 'Draft' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setStatusFilter(tab.id)}
+                className={`min-h-[32px] px-3 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                  statusFilter === tab.id
+                    ? 'bg-[#111111] text-white'
+                    : 'text-[#6B7280] hover:text-[#111111]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Search Filter */}
-      <div className="flex items-center space-x-3 bg-white p-4 rounded-xl border border-brand-border shadow-sm">
-        <Search size={18} className="text-brand-muted" />
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          placeholder="Search by product name, SKU, or keyword..."
-          className="flex-1 bg-transparent text-xs focus:outline-none"
-        />
-        <span className="text-xs text-brand-muted">{filteredProducts.length} items</span>
-      </div>
-
-      {/* PRODUCTS TABLE */}
-      <div className="bg-white rounded-2xl border border-brand-border shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[750px] text-left border-collapse text-xs">
-            <thead>
-              <tr className="bg-brand-surface border-b border-brand-border text-brand-muted uppercase tracking-wider font-semibold">
-                <th className="p-4">Product</th>
-                <th className="p-4">Category</th>
-                <th className="p-4">Price / Compare</th>
-                <th className="p-4">Inventory Stock</th>
-                <th className="p-4">Status</th>
-                <th className="p-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-brand-border/60">
-              {filteredProducts.map(p => (
-                <tr key={p._id || p.id} className="hover:bg-brand-surface/40 transition">
-                  <td className="p-4">
-                    <div className="flex items-center space-x-3">
-                      <img
-                        src={p.images?.[0] || 'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=800&auto=format&fit=crop'}
-                        alt=""
-                        className="w-12 h-14 object-cover rounded-md bg-brand-surface border border-brand-border flex-shrink-0"
-                      />
-                      <div>
-                        <p className="font-bold text-brand-text line-clamp-1">{p.name}</p>
-                        <p className="text-[11px] text-brand-muted font-mono">{p.sku} • {p.weight}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-4 font-medium text-brand-text">
-                    {p.categoryName || p.category?.name || 'Unassigned'}
-                  </td>
-                  <td className="p-4">
-                    <span className="font-bold text-brand-primary">₹{p.price}</span>
-                    {p.compareAtPrice > p.price && (
-                      <span className="text-gray-400 line-through ml-1.5 text-[11px]">₹{p.compareAtPrice}</span>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-0.5 rounded font-bold ${
-                        p.stock <= p.lowStockThreshold
-                          ? 'bg-rose-100 text-rose-700 border border-rose-300'
-                          : 'bg-emerald-50 text-emerald-700'
-                      }`}>
-                        {p.stock} in stock
-                      </span>
-                      <button
-                        onClick={() => handleQuickStockUpdate(p._id || p.id, p.stock, 10)}
-                        className="text-[10px] text-brand-primary bg-brand-surface hover:bg-brand-border px-1.5 py-0.5 rounded font-bold"
-                        title="Add +10 units"
-                      >
-                        +10
-                      </button>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                      p.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
-                    }`}>
-                      {p.isActive ? 'Active' : 'Draft'}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right space-x-2">
-                    <button
-                      onClick={() => openEditModal(p)}
-                      className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                      title="Edit Product"
-                    >
-                      <Edit2 size={15} />
-                    </button>
-                    <button
-                      onClick={() => setDeleteTarget(p)}
-                      className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition"
-                      title="Delete Product"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </td>
+      {/* PRODUCTS TABLE & MOBILE CARDS */}
+      {isLoading && products.length === 0 ? (
+        <div className="bg-white rounded-xl border border-[#E5E5E5]">
+          <AdminLoadingState message="Loading product catalog..." />
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-[#E5E5E5] overflow-hidden">
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left border-collapse text-[13px]">
+              <thead>
+                <tr className="bg-[#F5F5F5] border-b border-[#E5E5E5] text-[#6B7280] text-[11px] uppercase tracking-wider font-semibold">
+                  <th className="py-3.5 px-5">Product</th>
+                  <th className="py-3.5 px-5">Category</th>
+                  <th className="py-3.5 px-5">Price / Compare</th>
+                  <th className="py-3.5 px-5">Inventory Stock</th>
+                  <th className="py-3.5 px-5">Status</th>
+                  <th className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* CREATE / EDIT MODAL */}
-      {activeModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setActiveModal(null)}></div>
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 z-10 space-y-5 max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center border-b border-brand-border pb-4">
-                <h3 className="font-serif text-xl font-bold text-brand-primary">
-                  {activeModal === 'create' ? 'Create New Product' : `Edit Product: ${activeModal.name}`}
-                </h3>
-                <button onClick={() => setActiveModal(null)} className="text-brand-muted hover:text-brand-primary">
-                  <X size={20} />
-                </button>
-              </div>
-
-              <form onSubmit={handleSaveProduct} className="space-y-4 text-xs">
-                {/* Product Name & SKU */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="sm:col-span-2">
-                    <label className="block font-bold text-brand-text mb-1">Product Title *</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={e => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="e.g. Velvet Vanilla & Vitamin E Body Lotion — 200ml"
-                      className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-brand-text mb-1">SKU Code</label>
-                    <input
-                      type="text"
-                      value={formData.sku}
-                      onChange={e => setFormData({ ...formData, sku: e.target.value })}
-                      placeholder="e.g. AB-LOT-VAN-200"
-                      className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                    />
-                  </div>
-                </div>
-
-                {/* Category & Pricing */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block font-bold text-brand-text mb-1">Category *</label>
-                    <select
-                      value={formData.category}
-                      onChange={e => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs font-medium"
-                    >
-                      {categories.map(c => (
-                        <option key={c._id || c.id} value={c._id || c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block font-bold text-brand-text mb-1">Selling Price (₹) *</label>
-                    <input
-                      type="number"
-                      required
-                      value={formData.price}
-                      onChange={e => setFormData({ ...formData, price: e.target.value })}
-                      className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs font-bold text-brand-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-brand-text mb-1">Compare At Price (₹)</label>
-                    <input
-                      type="number"
-                      value={formData.compareAtPrice}
-                      onChange={e => setFormData({ ...formData, compareAtPrice: e.target.value })}
-                      className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs text-gray-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-brand-text mb-1">Stock Units *</label>
-                    <input
-                      type="number"
-                      required
-                      value={formData.stock}
-                      onChange={e => setFormData({ ...formData, stock: e.target.value })}
-                      className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                    />
-                  </div>
-                </div>
-
-                {/* Product Photos Section */}
-                <div className="bg-brand-surface/50 border border-brand-border rounded-xl p-4 space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <label className="block font-bold text-brand-primary text-xs flex items-center gap-1.5">
-                        <ImageIcon size={16} />
-                        <span>Product Photos ({Array.isArray(formData.images) ? formData.images.length : 0})</span>
-                      </label>
-                      <p className="text-[11px] text-brand-muted">
-                        Upload high-res product photos from your device or paste an image URL. First photo is the primary cover image.
-                      </p>
-                    </div>
-
-                    {/* Upload File Input Button */}
-                    <label className={`cursor-pointer inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-brand-primary text-white text-xs font-semibold rounded-lg hover:bg-brand-hover transition shadow-sm ${isUploadingImage ? 'opacity-60 pointer-events-none' : ''}`}>
-                      {isUploadingImage ? <Loader2 size={14} className="animate-spin" /> : <UploadCloud size={14} />}
-                      <span>{isUploadingImage ? 'Uploading...' : 'Upload Photos'}</span>
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleImageFileUpload}
-                        disabled={isUploadingImage}
-                      />
-                    </label>
-                  </div>
-
-                  {/* Image Thumbnails Grid */}
-                  {Array.isArray(formData.images) && formData.images.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 pt-2">
-                      {formData.images.map((img, idx) => (
-                        <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden border border-brand-border bg-white shadow-sm">
-                          <img
-                            src={img}
-                            alt={`Product preview ${idx + 1}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=Invalid+Image'; }}
-                          />
-                          {idx === 0 && (
-                            <span className="absolute top-1 left-1 bg-brand-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">
-                              Cover
+              </thead>
+              <tbody className="divide-y divide-[#E5E5E5]">
+                {paginatedProducts.length > 0 ? (
+                  paginatedProducts.map((p) => {
+                    const isLow =
+                      (Number(p.stock) || 0) <=
+                      (Number(p.lowStockThreshold) || 10);
+                    return (
+                      <tr
+                        key={p._id || p.id}
+                        className="hover:bg-[#F5F5F5]/60 transition-colors"
+                      >
+                        <td className="py-3.5 px-5">
+                          <div className="flex items-center gap-3.5">
+                            <img
+                              src={
+                                p.images?.[0] ||
+                                'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=800&auto=format&fit=crop'
+                              }
+                              alt=""
+                              className="w-11 h-13 object-cover rounded-lg bg-[#F5F5F5] border border-[#E5E5E5] flex-shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <p className="font-semibold text-[#111111] line-clamp-1">
+                                {p.name}
+                              </p>
+                              <p className="text-xs text-[#6B7280] font-mono mt-0.5">
+                                {p.sku} • {p.weight}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-5">
+                          <AdminBadge variant="neutral">
+                            {p.categoryName || p.category?.name || 'Unassigned'}
+                          </AdminBadge>
+                        </td>
+                        <td className="py-3.5 px-5">
+                          <span className="font-semibold text-[#111111]">
+                            ₹{p.price}
+                          </span>
+                          {p.compareAtPrice > p.price && (
+                            <span className="text-[#6B7280] line-through ml-1.5 text-xs">
+                              ₹{p.compareAtPrice}
                             </span>
                           )}
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveImage(idx)}
-                            className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-700 text-white rounded-full p-1 opacity-90 group-hover:opacity-100 transition shadow"
-                            title="Remove photo"
+                        </td>
+                        <td className="py-3.5 px-5">
+                          <div className="flex items-center gap-2">
+                            <AdminBadge
+                              variant={isLow ? 'danger' : 'success'}
+                              dot
+                            >
+                              {p.stock} in stock
+                            </AdminBadge>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleQuickStockUpdate(
+                                  p._id || p.id,
+                                  p.stock,
+                                  10
+                                )
+                              }
+                              className="min-h-[28px] px-2 py-0.5 rounded-md bg-white border border-[#111111] hover:bg-[#111111] hover:text-white text-[#111111] text-[11px] font-semibold transition-colors cursor-pointer"
+                              title="Add +10 units"
+                            >
+                              +10
+                            </button>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-5">
+                          <AdminBadge
+                            variant={p.isActive ? 'dark' : 'muted'}
                           >
-                            <X size={12} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="border border-dashed border-brand-border rounded-lg p-6 text-center text-brand-muted bg-white/50">
-                      <UploadCloud size={28} className="mx-auto mb-1 text-brand-muted/70" />
-                      <p className="text-xs font-medium">No photos uploaded yet</p>
-                      <p className="text-[10px]">Click "Upload Photos" above or paste an image URL below</p>
-                    </div>
-                  )}
+                            {p.isActive ? 'Active' : 'Draft'}
+                          </AdminBadge>
+                        </td>
+                        <td className="py-3.5 px-5 text-right">
+                          <div className="inline-flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => openEditModal(p)}
+                              className="w-9 h-9 rounded-lg border border-[#E5E5E5] bg-white hover:border-[#111111] hover:bg-[#F5F5F5] text-[#111111] inline-flex items-center justify-center transition-colors cursor-pointer"
+                              title="Edit Product"
+                              aria-label={`Edit ${p.name}`}
+                            >
+                              <Edit2 size={15} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteTarget(p)}
+                              className="w-9 h-9 rounded-lg border border-[#E5E5E5] bg-white hover:border-red-200 hover:bg-red-50 text-[#6B7280] hover:text-red-600 inline-flex items-center justify-center transition-colors cursor-pointer"
+                              title="Delete Product"
+                              aria-label={`Delete ${p.name}`}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={6}>
+                      <AdminEmptyState
+                        icon={Package}
+                        title="No matching products"
+                        description="Try clearing your search filters or add a new formulation to the catalog."
+                        actionLabel="Add New Product"
+                        onAction={openCreateModal}
+                      />
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-                  {/* Add Image by URL fallback */}
-                  <div className="flex gap-2 pt-2 border-t border-brand-border/60">
-                    <input
-                      type="url"
-                      value={customImageUrl}
-                      onChange={e => setCustomImageUrl(e.target.value)}
-                      placeholder="Or paste external image URL (e.g. https://.../photo.jpg)"
-                      className="flex-1 px-3 py-1.5 bg-white border border-brand-border rounded-lg text-xs"
-                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomUrl(); } }}
+          {/* Mobile Stacked Cards */}
+          <div className="md:hidden divide-y divide-[#E5E5E5]">
+            {paginatedProducts.length > 0 ? (
+              paginatedProducts.map((p) => {
+                const isLow =
+                  (Number(p.stock) || 0) <=
+                  (Number(p.lowStockThreshold) || 10);
+                return (
+                  <div key={p._id || p.id} className="p-4 space-y-3.5">
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={
+                          p.images?.[0] ||
+                          'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=800&auto=format&fit=crop'
+                        }
+                        alt=""
+                        className="w-14 h-16 object-cover rounded-lg bg-[#F5F5F5] border border-[#E5E5E5] flex-shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-semibold text-[#111111] line-clamp-2">
+                            {p.name}
+                          </p>
+                          <AdminBadge
+                            variant={p.isActive ? 'dark' : 'muted'}
+                          >
+                            {p.isActive ? 'Active' : 'Draft'}
+                          </AdminBadge>
+                        </div>
+                        <p className="text-xs font-mono text-[#6B7280] mt-1">
+                          {p.sku} • {p.weight}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <span className="text-sm font-bold text-[#111111]">
+                            ₹{p.price}
+                          </span>
+                          {p.compareAtPrice > p.price && (
+                            <span className="text-xs text-[#6B7280] line-through">
+                              ₹{p.compareAtPrice}
+                            </span>
+                          )}
+                          <span className="text-xs text-[#6B7280]">
+                            • {p.categoryName || p.category?.name || 'Unassigned'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#E5E5E5]">
+                      <div className="flex items-center gap-2">
+                        <AdminBadge
+                          variant={isLow ? 'danger' : 'success'}
+                          dot
+                        >
+                          {p.stock} in stock
+                        </AdminBadge>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleQuickStockUpdate(
+                              p._id || p.id,
+                              p.stock,
+                              10
+                            )
+                          }
+                          className="min-h-[34px] px-2.5 py-1 rounded-md bg-white border border-[#111111] text-[#111111] text-xs font-semibold"
+                        >
+                          +10 Stock
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <AdminButton
+                          variant="outline"
+                          size="sm"
+                          icon={Edit2}
+                          onClick={() => openEditModal(p)}
+                        >
+                          Edit
+                        </AdminButton>
+                        <AdminButton
+                          variant="danger-outline"
+                          size="sm"
+                          icon={Trash2}
+                          onClick={() => setDeleteTarget(p)}
+                          aria-label={`Delete ${p.name}`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <AdminEmptyState
+                icon={Package}
+                title="No matching products"
+                description="Try clearing your search filters or add a new formulation to the catalog."
+                actionLabel="Add New Product"
+                onAction={openCreateModal}
+              />
+            )}
+          </div>
+
+          <AdminPagination
+            currentPage={currentPage}
+            totalItems={filteredProducts.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            itemLabel="products"
+          />
+        </div>
+      )}
+
+      {/* CREATE / EDIT PRODUCT MODAL */}
+      <AdminModal
+        isOpen={Boolean(activeModal)}
+        onClose={() => setActiveModal(null)}
+        subtitle="Catalog Management"
+        title={
+          activeModal === 'create'
+            ? 'Create New Product'
+            : `Edit Product: ${activeModal?.name || ''}`
+        }
+        maxWidth="max-w-3xl"
+        footer={
+          <>
+            <AdminButton
+              variant="secondary"
+              onClick={() => setActiveModal(null)}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </AdminButton>
+            <AdminButton
+              variant="primary"
+              type="submit"
+              form="admin-product-form"
+              isLoading={isSaving}
+              loadingText="Saving Product..."
+              className="w-full sm:w-auto"
+            >
+              Save Formulation
+            </AdminButton>
+          </>
+        }
+      >
+        <form
+          id="admin-product-form"
+          onSubmit={handleSaveProduct}
+          className="space-y-5"
+        >
+          {/* Product Name & SKU */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <AdminInput
+              containerClassName="sm:col-span-2"
+              label="Product Title"
+              required
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              placeholder="e.g. Velvet Vanilla & Vitamin E Body Lotion — 200ml"
+            />
+            <AdminInput
+              label="SKU Code"
+              value={formData.sku}
+              onChange={(e) =>
+                setFormData({ ...formData, sku: e.target.value })
+              }
+              placeholder="e.g. AB-LOT-VAN-200"
+              className="font-mono"
+            />
+          </div>
+
+          {/* Category & Pricing */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <AdminSelect
+              label="Category"
+              required
+              value={formData.category}
+              onChange={(e) =>
+                setFormData({ ...formData, category: e.target.value })
+              }
+            >
+              {categories.map((c) => (
+                <option key={c._id || c.id} value={c._id || c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </AdminSelect>
+
+            <AdminInput
+              label="Selling Price (₹)"
+              type="number"
+              required
+              value={formData.price}
+              onChange={(e) =>
+                setFormData({ ...formData, price: e.target.value })
+              }
+              className="font-semibold"
+            />
+
+            <AdminInput
+              label="Compare At Price (₹)"
+              type="number"
+              value={formData.compareAtPrice}
+              onChange={(e) =>
+                setFormData({ ...formData, compareAtPrice: e.target.value })
+              }
+            />
+
+            <AdminInput
+              label="Stock Units"
+              type="number"
+              required
+              value={formData.stock}
+              onChange={(e) =>
+                setFormData({ ...formData, stock: e.target.value })
+              }
+            />
+          </div>
+
+          {/* Product Photos Section */}
+          <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-xl p-4 space-y-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <label className="text-[13px] font-semibold text-[#111111] flex items-center gap-1.5">
+                  <ImageIcon size={16} />
+                  <span>
+                    Product Photos (
+                    {Array.isArray(formData.images)
+                      ? formData.images.length
+                      : 0}
+                    )
+                  </span>
+                </label>
+                <p className="text-xs text-[#6B7280] mt-0.5">
+                  Upload product photos from your device or paste an image URL.
+                  First photo is the primary cover image.
+                </p>
+              </div>
+
+              <label
+                className={`cursor-pointer min-h-[40px] inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#111111] text-white text-xs font-medium rounded-lg hover:bg-[#262626] transition-colors flex-shrink-0 ${
+                  isUploadingImage ? 'opacity-60 pointer-events-none' : ''
+                }`}
+              >
+                {isUploadingImage ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <UploadCloud size={14} />
+                )}
+                <span>
+                  {isUploadingImage ? 'Uploading...' : 'Upload Photos'}
+                </span>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageFileUpload}
+                  disabled={isUploadingImage}
+                />
+              </label>
+            </div>
+
+            {/* Image Thumbnails Grid */}
+            {Array.isArray(formData.images) && formData.images.length > 0 ? (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 pt-1">
+                {formData.images.map((img, idx) => (
+                  <div
+                    key={idx}
+                    className="relative group aspect-square rounded-lg overflow-hidden border border-[#E5E5E5] bg-white"
+                  >
+                    <img
+                      src={img}
+                      alt={`Product preview ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src =
+                          'https://placehold.co/400x400?text=Invalid+Image';
+                      }}
                     />
+                    {idx === 0 && (
+                      <span className="absolute top-1.5 left-1.5 bg-[#111111] text-white text-[10px] font-semibold px-1.5 py-0.5 rounded">
+                        Cover
+                      </span>
+                    )}
                     <button
                       type="button"
-                      onClick={handleAddCustomUrl}
-                      className="px-3 py-1.5 bg-brand-surface hover:bg-brand-border text-brand-text font-semibold text-xs rounded-lg border border-brand-border transition"
+                      onClick={() => handleRemoveImage(idx)}
+                      className="absolute top-1.5 right-1.5 bg-white/95 hover:bg-red-600 text-[#111111] hover:text-white border border-[#E5E5E5] rounded-md p-1 transition-colors cursor-pointer"
+                      title="Remove photo"
                     >
-                      Add URL
+                      <X size={12} />
                     </button>
                   </div>
-                </div>
+                ))}
+              </div>
+            ) : (
+              <div className="border border-dashed border-[#D4D4D4] rounded-lg p-6 text-center text-[#6B7280] bg-white">
+                <UploadCloud
+                  size={24}
+                  className="mx-auto mb-1.5 text-[#6B7280]"
+                />
+                <p className="text-xs font-medium text-[#111111]">
+                  No photos uploaded yet
+                </p>
+                <p className="text-[11px] mt-0.5">
+                  Click &ldquo;Upload Photos&rdquo; above or paste an image URL
+                  below
+                </p>
+              </div>
+            )}
 
-                {/* Badges */}
-                <div>
-                  <label className="block font-bold text-brand-text mb-1">Badges (comma-separated, e.g. BESTSELLER, HOT, NEW, -17%)</label>
-                  <input
-                    type="text"
-                    value={formData.badges}
-                    onChange={e => setFormData({ ...formData, badges: e.target.value })}
-                    placeholder="BESTSELLER, HOT"
-                    className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                  />
-                </div>
-
-                {/* Descriptions */}
-                <div>
-                  <label className="block font-bold text-brand-text mb-1">Short Description</label>
-                  <input
-                    type="text"
-                    value={formData.shortDescription}
-                    onChange={e => setFormData({ ...formData, shortDescription: e.target.value })}
-                    className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-brand-text mb-1">Full Description *</label>
-                  <textarea
-                    rows={3}
-                    required
-                    value={formData.description}
-                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-bold text-brand-text mb-1">Botanical Ingredients</label>
-                    <textarea
-                      rows={2}
-                      value={formData.ingredients}
-                      onChange={e => setFormData({ ...formData, ingredients: e.target.value })}
-                      className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs font-mono text-[11px]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-brand-text mb-1">How To Use</label>
-                    <textarea
-                      rows={2}
-                      value={formData.howToUse}
-                      onChange={e => setFormData({ ...formData, howToUse: e.target.value })}
-                      className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                    />
-                  </div>
-                </div>
-
-                {/* Toggles */}
-                <div className="flex items-center space-x-6 pt-2">
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.isFeatured}
-                      onChange={e => setFormData({ ...formData, isFeatured: e.target.checked })}
-                      className="rounded text-brand-primary"
-                    />
-                    <span className="font-semibold text-brand-text">Featured on Homepage</span>
-                  </label>
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.isActive}
-                      onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
-                      className="rounded text-brand-primary"
-                    />
-                    <span className="font-semibold text-brand-text">Published (Active)</span>
-                  </label>
-                </div>
-
-                {/* Modal CTA */}
-                <div className="pt-4 border-t border-brand-border flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setActiveModal(null)}
-                    className="px-5 py-2.5 border border-brand-border rounded-lg font-semibold text-brand-text hover:bg-brand-surface"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSaving}
-                    className="px-6 py-2.5 bg-brand-primary hover:bg-brand-hover text-white font-semibold rounded-lg shadow disabled:opacity-50"
-                  >
-                    {isSaving ? 'Saving Product...' : 'Save Formulation'}
-                  </button>
-                </div>
-              </form>
+            {/* Add Image by URL fallback */}
+            <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-[#E5E5E5]">
+              <input
+                type="url"
+                value={customImageUrl}
+                onChange={(e) => setCustomImageUrl(e.target.value)}
+                placeholder="Or paste external image URL (e.g. https://.../photo.jpg)"
+                className="flex-1 min-h-[40px] px-3.5 py-2 bg-white border border-[#E5E5E5] rounded-lg text-xs text-[#111111] placeholder:text-[#6B7280] focus:outline-none focus:border-[#111111]"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddCustomUrl();
+                  }
+                }}
+              />
+              <AdminButton
+                variant="secondary"
+                size="sm"
+                onClick={handleAddCustomUrl}
+              >
+                Add URL
+              </AdminButton>
             </div>
           </div>
-        </div>
-      )}
+
+          {/* Badges & Weight */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <AdminInput
+              containerClassName="sm:col-span-2"
+              label="Badges (comma-separated)"
+              value={formData.badges}
+              onChange={(e) =>
+                setFormData({ ...formData, badges: e.target.value })
+              }
+              placeholder="BESTSELLER, HOT, NEW, -17%"
+            />
+            <AdminInput
+              label="Net Weight / Volume"
+              value={formData.weight || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, weight: e.target.value })
+              }
+              placeholder="e.g. 200ml"
+            />
+          </div>
+
+          {/* Descriptions */}
+          <AdminInput
+            label="Short Description"
+            value={formData.shortDescription}
+            onChange={(e) =>
+              setFormData({ ...formData, shortDescription: e.target.value })
+            }
+            placeholder="Brief single-line product summary"
+          />
+
+          <AdminTextarea
+            label="Full Description"
+            required
+            rows={3}
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <AdminTextarea
+              label="Botanical Ingredients"
+              rows={2}
+              value={formData.ingredients}
+              onChange={(e) =>
+                setFormData({ ...formData, ingredients: e.target.value })
+              }
+              className="font-mono text-xs"
+            />
+            <AdminTextarea
+              label="How To Use"
+              rows={2}
+              value={formData.howToUse}
+              onChange={(e) =>
+                setFormData({ ...formData, howToUse: e.target.value })
+              }
+            />
+          </div>
+
+          {/* Toggles */}
+          <div className="flex flex-wrap items-center gap-6 pt-2 border-t border-[#E5E5E5]">
+            <AdminCheckbox
+              label="Featured on Homepage"
+              checked={Boolean(formData.isFeatured)}
+              onChange={(e) =>
+                setFormData({ ...formData, isFeatured: e.target.checked })
+              }
+            />
+            <AdminCheckbox
+              label="Published (Active)"
+              checked={Boolean(formData.isActive)}
+              onChange={(e) =>
+                setFormData({ ...formData, isActive: e.target.checked })
+              }
+            />
+          </div>
+        </form>
+      </AdminModal>
 
       {/* DELETE CONFIRMATION MODAL */}
-      {deleteTarget && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => !isDeleting && setDeleteTarget(null)}></div>
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-brand-border space-y-4 animate-scale-in">
-              <div className="flex items-center space-x-3 text-red-600">
-                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                  <Trash2 size={20} />
-                </div>
-                <div>
-                  <h3 className="font-serif text-lg font-bold text-brand-primary">Delete Product Formulation</h3>
-                  <p className="text-xs text-brand-muted">This action will remove the product permanently.</p>
-                </div>
-              </div>
-
-              <div className="p-3 bg-brand-surface rounded-xl border border-brand-border text-xs text-brand-text">
-                <p className="font-semibold text-brand-primary">{deleteTarget.name}</p>
-                <p className="text-[11px] text-brand-muted mt-0.5">SKU: {deleteTarget.sku} • Price: ₹{deleteTarget.price} • Stock: {deleteTarget.stock}</p>
-              </div>
-
-              <p className="text-xs text-brand-muted">
-                Are you sure you want to permanently delete this product? It will be immediately removed from the catalog, shop pages, and inventory.
-              </p>
-
-              <div className="pt-2 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  disabled={isDeleting}
-                  onClick={() => setDeleteTarget(null)}
-                  className="px-4 py-2 border border-brand-border rounded-lg text-xs font-semibold text-brand-text hover:bg-brand-surface disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  disabled={isDeleting}
-                  onClick={confirmDeleteProduct}
-                  className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow transition disabled:opacity-50 flex items-center space-x-1.5"
-                >
-                  <Trash2 size={14} />
-                  <span>{isDeleting ? 'Deleting...' : 'Yes, Delete Product'}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
+      <AdminConfirmDialog
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => !isDeleting && setDeleteTarget(null)}
+        onConfirm={confirmDeleteProduct}
+        isLoading={isDeleting}
+        title="Delete Product Formulation"
+        description="Are you sure you want to permanently delete this product? It will be immediately removed from the catalog, shop pages, and inventory."
+        itemTitle={deleteTarget?.name}
+        itemSubtitle={
+          deleteTarget
+            ? `SKU: ${deleteTarget.sku} • Price: ₹${deleteTarget.price} • Stock: ${deleteTarget.stock}`
+            : ''
+        }
+        confirmLabel="Yes, Delete Product"
+      />
     </div>
   );
 };

@@ -19,11 +19,21 @@ module.exports = {
           border: '#eeeeee',
           text: '#212121',
           muted: '#666666'
+        },
+        admin: {
+          primary: '#111111',
+          hover: '#262626',
+          bg: '#ffffff',
+          surface: '#f5f5f5',
+          border: '#e5e5e5',
+          text: '#111111',
+          muted: '#6b7280'
         }
       },
       fontFamily: {
         serif: ['Butler', 'Playfair Display', 'serif'],
         sans: ['Jost', 'Inter', 'sans-serif'],
+        admin: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
       boxShadow: {
         'drawer': '-10px 0 30px rgba(0,0,0,0.12)',

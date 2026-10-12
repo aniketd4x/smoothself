@@ -20,7 +20,7 @@ export default function StorefrontShell({ children }) {
         {!isAdminPath && <Header />}
       </Suspense>
 
-      <main className="flex-1 pb-16 md:pb-0">
+      <main className={`flex-1 ${!isAdminPath ? 'pb-16 md:pb-0' : ''}`}>
         <Suspense fallback={<div className="min-h-[50vh] flex items-center justify-center" />}>
           {children}
         </Suspense>

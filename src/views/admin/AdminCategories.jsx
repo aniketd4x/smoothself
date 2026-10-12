@@ -1,23 +1,44 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Plus, Edit2, Trash2, Layers, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, Layers, Search } from 'lucide-react';
+import {
+  AdminPageHeader,
+  AdminButton,
+  AdminBadge,
+  AdminInput,
+  AdminTextarea,
+  AdminCheckbox,
+  AdminModal,
+  AdminConfirmDialog,
+  AdminEmptyState,
+  AdminLoadingState,
+} from './components/AdminUI';
 
 const AdminCategories = () => {
   const { token, showToast } = useApp();
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [activeModal, setActiveModal] = useState(null);
-  const [formData, setFormData] = useState({ name: '', description: '', image: '', order: 0, isActive: true });
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    image: '',
+    order: 0,
+    isActive: true,
+  });
   const [isSaving, setIsSaving] = useState(false);
 
   const fetchCategories = () => {
     setIsLoading(true);
     fetch('/api/categories/all', {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     })
-      .then(r => r.json())
-      .then(data => {
+      .then((r) => r.json())
+      .then((data) => {
         if (data.success) setCategories(data.categories);
       })
       .catch(console.error)
@@ -32,9 +53,10 @@ const AdminCategories = () => {
     setFormData({
       name: '',
       description: 'Handcrafted botanical rituals for daily hydration.',
-      image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=800&auto=format&fit=crop',
+      image:
+        'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=800&auto=format&fit=crop',
       order: categories.length + 1,
-      isActive: true
+      isActive: true,
     });
     setActiveModal('create');
   };
@@ -48,7 +70,8 @@ const AdminCategories = () => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const editId = activeModal !== 'create' ? (activeModal?._id || activeModal?.id) : null;
+      const editId =
+        activeModal !== 'create' ? activeModal?._id || activeModal?.id : null;
       const isEdit = Boolean(editId);
       const url = isEdit ? `/api/categories/${editId}` : '/api/categories';
       const method = isEdit ? 'PUT' : 'POST';
@@ -57,9 +80,9 @@ const AdminCategories = () => {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (data.success) {
@@ -76,143 +99,248 @@ const AdminCategories = () => {
     }
   };
 
-  const handleDelete = async (id, name) => {
-    if (!window.confirm(`Delete category "${name}"?`)) return;
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget._id || deleteTarget.id;
+    setIsDeleting(true);
     try {
       const res = await fetch(`/api/categories/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (data.success) {
         showToast('Category deleted');
-        setCategories(prev => prev.filter(c => (c._id || c.id) !== id));
+        setCategories((prev) => prev.filter((c) => (c._id || c.id) !== id));
+        setDeleteTarget(null);
+      } else {
+        showToast(data.message || 'Error deleting category', 'error');
       }
     } catch {
       showToast('Error deleting category', 'error');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
+  const filteredCategories = categories.filter(
+    (c) =>
+      c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.slug?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-brand-primary">
-            Categories & Collections
-          </h1>
-          <p className="text-xs text-brand-muted mt-1">
-            Organize catalog products into collections shown on tabs and navigation.
-          </p>
+      <AdminPageHeader
+        title="Categories & Collections"
+        subtitle="Organize catalog products into collections shown on storefront tabs and navigation."
+        badge={`${categories.length} Collections`}
+        actions={
+          <AdminButton
+            variant="primary"
+            icon={Plus}
+            onClick={openCreateModal}
+            className="w-full sm:w-auto"
+          >
+            Add New Category
+          </AdminButton>
+        }
+      />
+
+      {/* Search Bar */}
+      <div className="bg-white p-4 rounded-xl border border-[#E5E5E5] flex items-center justify-between gap-3">
+        <div className="relative flex-1">
+          <Search
+            size={16}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none"
+          />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search collections by name or slug..."
+            className="w-full min-h-[40px] pl-10 pr-4 py-2 bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg text-[13px] text-[#111111] placeholder:text-[#6B7280] focus:outline-none focus:bg-white focus:border-[#111111] transition-colors"
+          />
         </div>
-
-        <button
-          onClick={openCreateModal}
-          className="inline-flex items-center justify-center space-x-1.5 px-4 py-2.5 bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold rounded-lg shadow transition w-full sm:w-auto"
-        >
-          <Plus size={16} />
-          <span>Add New Category</span>
-        </button>
+        <span className="text-xs font-medium text-[#6B7280] hidden sm:inline">
+          {filteredCategories.length} collections
+        </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((cat) => (
-          <div key={cat._id || cat.id} className="bg-white rounded-2xl border border-brand-border overflow-hidden shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="h-40 bg-brand-surface overflow-hidden relative">
-                <img src={cat.image || 'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=800&auto=format&fit=crop'} alt="" className="w-full h-full object-cover" />
-                <span className={`absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
-                  cat.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
-                }`}>
-                  {cat.isActive ? 'Active' : 'Draft'}
+      {isLoading && categories.length === 0 ? (
+        <div className="bg-white rounded-xl border border-[#E5E5E5]">
+          <AdminLoadingState message="Loading categories..." />
+        </div>
+      ) : filteredCategories.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredCategories.map((cat) => (
+            <div
+              key={cat._id || cat.id}
+              className="bg-white rounded-xl border border-[#E5E5E5] overflow-hidden flex flex-col justify-between transition-colors hover:border-[#D4D4D4]"
+            >
+              <div>
+                <div className="h-44 bg-[#F5F5F5] overflow-hidden relative border-b border-[#E5E5E5]">
+                  <img
+                    src={
+                      cat.image ||
+                      'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=800&auto=format&fit=crop'
+                    }
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-3 right-3">
+                    <AdminBadge variant={cat.isActive ? 'dark' : 'muted'}>
+                      {cat.isActive ? 'Active' : 'Draft'}
+                    </AdminBadge>
+                  </div>
+                </div>
+                <div className="p-5">
+                  <h3 className="text-base font-semibold text-[#111111]">
+                    {cat.name}
+                  </h3>
+                  <p className="text-xs font-mono text-[#6B7280] mt-0.5">
+                    slug: {cat.slug}
+                  </p>
+                  <p className="text-[13px] text-[#6B7280] mt-2 line-clamp-2 leading-relaxed">
+                    {cat.description}
+                  </p>
+                </div>
+              </div>
+
+              <div className="px-5 py-3.5 bg-[#F5F5F5]/60 border-t border-[#E5E5E5] flex items-center justify-between text-xs">
+                <span className="font-medium text-[#6B7280]">
+                  Sort Order:{' '}
+                  <strong className="text-[#111111]">{cat.order}</strong>
                 </span>
-              </div>
-              <div className="p-5">
-                <h3 className="font-serif text-lg font-bold text-brand-primary">{cat.name}</h3>
-                <p className="text-[11px] font-mono text-brand-muted mt-0.5">slug: {cat.slug}</p>
-                <p className="text-xs text-brand-muted mt-2 line-clamp-2">{cat.description}</p>
-              </div>
-            </div>
-
-            <div className="p-5 pt-0 border-t border-brand-border/60 flex items-center justify-between text-xs">
-              <span className="text-brand-muted">Order: {cat.order}</span>
-              <div className="space-x-2">
-                <button onClick={() => openEditModal(cat)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded">
-                  <Edit2 size={15} />
-                </button>
-                <button onClick={() => handleDelete(cat._id || cat.id, cat.name)} className="p-1.5 text-red-500 hover:bg-red-50 rounded">
-                  <Trash2 size={15} />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {activeModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setActiveModal(null)}></div>
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-4 sm:p-6 z-10 space-y-4 max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center border-b border-brand-border pb-3">
-                <h3 className="font-serif text-lg font-bold text-brand-primary">
-                  {activeModal === 'create' ? 'Create Category' : `Edit Category`}
-                </h3>
-                <button onClick={() => setActiveModal(null)}><X size={18} /></button>
-              </div>
-
-              <form onSubmit={handleSave} className="space-y-3 text-xs">
-                <div>
-                  <label className="block font-bold text-brand-text mb-1">Category Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-brand-text mb-1">Description</label>
-                  <textarea
-                    rows={2}
-                    value={formData.description}
-                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-brand-text mb-1">Image URL</label>
-                  <input
-                    type="text"
-                    value={formData.image}
-                    onChange={e => setFormData({ ...formData, image: e.target.value })}
-                    className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-brand-text mb-1">Display Sort Order</label>
-                  <input
-                    type="number"
-                    value={formData.order}
-                    onChange={e => setFormData({ ...formData, order: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs"
-                  />
-                </div>
-
-                <div className="pt-3 border-t border-brand-border flex justify-end space-x-2">
-                  <button type="button" onClick={() => setActiveModal(null)} className="w-full sm:w-auto px-4 py-2.5 border rounded-lg text-center font-medium">Cancel</button>
-                  <button type="submit" disabled={isSaving} className="px-5 py-2 bg-brand-primary text-white rounded-lg">
-                    {isSaving ? 'Saving...' : 'Save Category'}
+                <div className="flex items-center gap-2">
+                  <AdminButton
+                    variant="outline"
+                    size="xs"
+                    icon={Edit2}
+                    onClick={() => openEditModal(cat)}
+                  >
+                    Edit
+                  </AdminButton>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteTarget(cat)}
+                    className="w-8 h-8 rounded-md border border-[#E5E5E5] bg-white hover:border-red-200 hover:bg-red-50 text-[#6B7280] hover:text-red-600 inline-flex items-center justify-center transition-colors cursor-pointer"
+                    aria-label={`Delete ${cat.name}`}
+                  >
+                    <Trash2 size={14} />
                   </button>
                 </div>
-              </form>
+              </div>
             </div>
-          </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-[#E5E5E5]">
+          <AdminEmptyState
+            icon={Layers}
+            title="No categories found"
+            description="Create a product category to organize your formulations."
+            actionLabel="Add New Category"
+            onAction={openCreateModal}
+          />
         </div>
       )}
+
+      {/* CREATE / EDIT CATEGORY MODAL */}
+      <AdminModal
+        isOpen={Boolean(activeModal)}
+        onClose={() => setActiveModal(null)}
+        subtitle="Catalog Taxonomy"
+        title={activeModal === 'create' ? 'Create Category' : 'Edit Category'}
+        maxWidth="max-w-md"
+        footer={
+          <>
+            <AdminButton
+              variant="secondary"
+              onClick={() => setActiveModal(null)}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </AdminButton>
+            <AdminButton
+              variant="primary"
+              type="submit"
+              form="admin-category-form"
+              isLoading={isSaving}
+              loadingText="Saving..."
+              className="w-full sm:w-auto"
+            >
+              Save Category
+            </AdminButton>
+          </>
+        }
+      >
+        <form
+          id="admin-category-form"
+          onSubmit={handleSave}
+          className="space-y-4"
+        >
+          <AdminInput
+            label="Category Name"
+            required
+            value={formData.name}
+            onChange={(e) =>
+              setFormData({ ...formData, name: e.target.value })
+            }
+            placeholder="e.g. Body Lotions"
+          />
+
+          <AdminTextarea
+            label="Description"
+            rows={2}
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+          />
+
+          <AdminInput
+            label="Cover Image URL"
+            value={formData.image}
+            onChange={(e) =>
+              setFormData({ ...formData, image: e.target.value })
+            }
+            placeholder="https://..."
+          />
+
+          <AdminInput
+            label="Display Sort Order"
+            type="number"
+            value={formData.order}
+            onChange={(e) =>
+              setFormData({ ...formData, order: Number(e.target.value) })
+            }
+          />
+
+          <div className="pt-1">
+            <AdminCheckbox
+              label="Active on Storefront"
+              checked={formData.isActive !== false}
+              onChange={(e) =>
+                setFormData({ ...formData, isActive: e.target.checked })
+              }
+            />
+          </div>
+        </form>
+      </AdminModal>
+
+      {/* DELETE CONFIRMATION */}
+      <AdminConfirmDialog
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => !isDeleting && setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        isLoading={isDeleting}
+        title="Delete Category"
+        description="Are you sure you want to delete this category? Products assigned to it will remain in your catalog."
+        itemTitle={deleteTarget?.name}
+        itemSubtitle={deleteTarget?.slug ? `slug: ${deleteTarget.slug}` : ''}
+        confirmLabel="Delete Category"
+      />
     </div>
   );
 };
