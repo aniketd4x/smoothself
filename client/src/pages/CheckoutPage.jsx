@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ShieldCheck, Truck, ArrowLeft, Tag, Check, CreditCard, Banknote, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Truck, ArrowLeft, Tag, Check, CreditCard, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const CheckoutPage = () => {
@@ -428,28 +428,6 @@ const CheckoutPage = () => {
                 </h3>
                 
                 <div className="space-y-3">
-                  {/* COD (Disabled) */}
-                  <div className="flex items-start space-x-3 p-4 rounded-xl border border-dashed border-gray-200 bg-gray-50/80 opacity-60 cursor-not-allowed">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="COD"
-                      disabled
-                      checked={false}
-                      className="mt-1 text-gray-400 cursor-not-allowed"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <Banknote size={18} className="text-gray-400" />
-                        <span className="text-sm font-semibold text-gray-500">Cash on Delivery (COD)</span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">Disabled</span>
-                      </div>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        Cash on Delivery is currently disabled. Please checkout securely via online payment.
-                      </p>
-                    </div>
-                  </div>
-
                   {/* Razorpay Online Payment */}
                   <label className={`flex items-start space-x-3 p-4 rounded-xl border cursor-pointer transition ${
                     paymentMethod === 'ONLINE'
