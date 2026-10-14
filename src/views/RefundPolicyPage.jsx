@@ -58,7 +58,7 @@ const RefundPolicyPage = () => {
             <p className="text-[11px] text-brand-muted">Initiate returns or exchange within 30 days of receiving your package.</p>
           </div>
           <div className="bg-brand-surface/70 border border-brand-border rounded-xl p-5 text-center">
-            <CheckCircle size={24} className="text-emerald-600 mx-auto mb-2" />
+            <CheckCircle size={24} className="text-brand-primary mx-auto mb-2" />
             <h4 className="font-bold text-brand-primary text-xs sm:text-sm mb-1">Free Damaged Replacements</h4>
             <p className="text-[11px] text-brand-muted">Instant free replacement if bottle is damaged or leaking during transit.</p>
           </div>
@@ -109,7 +109,7 @@ const RefundPolicyPage = () => {
             <p className="mb-3">
               While every order is inspected and secured in bubble wrap at our Mumbai fulfillment center before dispatch, accidental shipping mishandling can occasionally happen. If your parcel arrives damaged, leaking, broken, or contains an incorrect variant:
             </p>
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-900 mb-4">
+            <div className="bg-neutral-100 border border-neutral-300 rounded-xl p-4 text-neutral-900 mb-4">
               <div className="flex items-start space-x-2">
                 <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
                 <div>

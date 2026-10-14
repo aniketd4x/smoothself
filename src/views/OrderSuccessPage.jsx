@@ -39,10 +39,10 @@ const OrderSuccessPage = () => {
         
         {/* Celebration Header */}
         <div className="text-center space-y-3 pb-8 border-b border-brand-border">
-          <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+          <div className="w-16 h-16 bg-neutral-100 text-neutral-900 border border-neutral-300 rounded-full flex items-center justify-center mx-auto shadow-sm">
             <CheckCircle2 size={36} />
           </div>
-          <span className="text-xs font-semibold text-emerald-700 tracking-wider uppercase bg-emerald-50 px-3 py-1 rounded-full">
+          <span className="text-xs font-semibold text-brand-primary tracking-wider uppercase bg-neutral-100 border border-neutral-200 px-3 py-1 rounded-full">
             Order Confirmed & Placed
           </span>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-brand-primary">
@@ -129,7 +129,7 @@ const OrderSuccessPage = () => {
                 <span className="font-semibold text-brand-text">₹{order.subtotal}</span>
               </div>
               {order.discountAmount > 0 && (
-                <div className="flex justify-between text-emerald-600 font-medium">
+                <div className="flex justify-between text-brand-primary font-medium">
                   <span>Coupon Discount ({order.couponCode})</span>
                   <span>-₹{order.discountAmount}</span>
                 </div>

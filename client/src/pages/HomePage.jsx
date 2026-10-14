@@ -247,7 +247,7 @@ const HomePage = () => {
               Why You’ll Love {settings.brandName || 'SmoothSelf'}
             </h2>
             <p className="text-xs sm:text-sm text-brand-muted mt-1 max-w-xl mx-auto">
-              Specially formulated for everyday luxury — high potency botanical moisture with a featherlight touch.
+              Specially formulated for everyday hydration — high potency botanical moisture with a featherlight touch.
             </p>
           </div>
 
@@ -311,14 +311,14 @@ const HomePage = () => {
               Our Exclusive Formulations • 200ml Bottles
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-brand-primary leading-tight">
-              Two Everyday Luxury Lotions
+              Two Everyday Botanical Lotions
             </h2>
             <p className="text-sm text-brand-muted mt-3">
               Crafted with clean actives, nourishing botanical lipids, and irresistible long-lasting fragrances. ₹249 each (MRP ₹299).
             </p>
           </div>
 
-          {/* 2-Column Luxury Product Presentation */}
+          {/* 2-Column Botanical Product Presentation */}
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               <div className="animate-pulse bg-[#faf9f8] aspect-[4/5] rounded-2xl"></div>
@@ -678,7 +678,7 @@ const HomePage = () => {
             </div>
             <div className="space-y-1">
               <Sparkles size={24} className="mx-auto text-purple-300 mb-2" />
-              <p className="text-xs sm:text-sm font-semibold">Luxury Formulations</p>
+              <p className="text-xs sm:text-sm font-semibold">Botanical Formulations</p>
               <p className="text-[11px] text-gray-300">Pure botanical extracts</p>
             </div>
             <div className="space-y-1">

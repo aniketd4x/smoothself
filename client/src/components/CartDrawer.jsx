@@ -132,7 +132,7 @@ const CartDrawer = () => {
                   Your cart is empty
                 </h4>
                 <p className="text-xs text-brand-muted max-w-xs mb-6">
-                  Explore our luxury botanical skincare and body elixirs to fill your bag.
+                  Explore our botanical skincare and body elixirs to fill your bag.
                 </p>
                 <button
                   onClick={() => {

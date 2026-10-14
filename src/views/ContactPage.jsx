@@ -70,7 +70,7 @@ const ContactPage = () => {
           <div className="lg:col-span-7 bg-white p-8 rounded-2xl border border-brand-border shadow-sm">
             {submitted ? (
               <div className="py-12 text-center space-y-3">
-                <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                <div className="w-14 h-14 bg-neutral-100 text-neutral-900 border border-neutral-300 rounded-full flex items-center justify-center mx-auto">
                   <CheckCircle2 size={32} />
                 </div>
                 <h3 className="font-serif text-xl font-bold text-brand-primary">Message Received!</h3>

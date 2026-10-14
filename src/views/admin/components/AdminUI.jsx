@@ -137,9 +137,9 @@ export const AdminBadge = ({
     dark: 'bg-[#111111] text-white border-[#111111]',
     outline: 'bg-white text-[#111111] border-[#111111]',
     muted: 'bg-[#F5F5F5] text-[#6B7280] border-[#E5E5E5]',
-    success: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    warning: 'bg-amber-50 text-amber-700 border-amber-200',
-    danger: 'bg-red-50 text-red-700 border-red-200',
+    success: 'bg-[#F5F5F5] text-[#111111] border-[#E5E5E5]',
+    warning: 'bg-[#F5F5F5] text-[#6B7280] border-[#E5E5E5]',
+    danger: 'bg-black text-white border-black',
   };
 
   const dotColors = {
@@ -147,9 +147,9 @@ export const AdminBadge = ({
     dark: 'bg-white',
     outline: 'bg-[#111111]',
     muted: 'bg-[#6B7280]',
-    success: 'bg-emerald-600',
-    warning: 'bg-amber-500',
-    danger: 'bg-red-600',
+    success: 'bg-[#111111]',
+    warning: 'bg-[#6B7280]',
+    danger: 'bg-white',
   };
 
   return (
@@ -199,9 +199,9 @@ export const AdminStatCard = ({
 }) => {
   const subtextColors = {
     muted: 'text-[#6B7280]',
-    success: 'text-emerald-700',
-    warning: 'text-amber-700',
-    danger: 'text-red-600',
+    success: 'text-[#111111]',
+    warning: 'text-[#6B7280]',
+    danger: 'text-[#111111]',
     primary: 'text-[#111111]',
   };
 

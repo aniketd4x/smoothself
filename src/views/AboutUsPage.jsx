@@ -56,25 +56,25 @@ const AboutUsPage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white p-6 rounded-xl border border-brand-border text-center space-y-2">
-              <Leaf size={28} className="mx-auto text-emerald-600 mb-2" />
+              <Leaf size={28} className="mx-auto text-brand-primary mb-2" />
               <h4 className="font-serif text-base font-bold text-brand-primary">100% Vegan</h4>
               <p className="text-xs text-brand-muted">Crafted exclusively with sustainable plant extracts, wild herbs, and clean actives.</p>
             </div>
 
             <div className="bg-white p-6 rounded-xl border border-brand-border text-center space-y-2">
-              <Heart size={28} className="mx-auto text-rose-600 mb-2" />
+              <Heart size={28} className="mx-auto text-brand-primary mb-2" />
               <h4 className="font-serif text-base font-bold text-brand-primary">Cruelty-Free</h4>
               <p className="text-xs text-brand-muted">Never tested on animals. Tested on human volunteers for dermatological safety.</p>
             </div>
 
             <div className="bg-white p-6 rounded-xl border border-brand-border text-center space-y-2">
-              <Droplets size={28} className="mx-auto text-blue-600 mb-2" />
+              <Droplets size={28} className="mx-auto text-brand-primary mb-2" />
               <h4 className="font-serif text-base font-bold text-brand-primary">Clean Actives</h4>
               <p className="text-xs text-brand-muted">Zero parabens, artificial dyes, phthalates, silicones, or mineral oils.</p>
             </div>
 
             <div className="bg-white p-6 rounded-xl border border-brand-border text-center space-y-2">
-              <ShieldCheck size={28} className="mx-auto text-purple-600 mb-2" />
+              <ShieldCheck size={28} className="mx-auto text-brand-primary mb-2" />
               <h4 className="font-serif text-base font-bold text-brand-primary">pH 5.5 Balanced</h4>
               <p className="text-xs text-brand-muted">Protects the natural acid mantle of sensitive Indian skin barriers.</p>
             </div>

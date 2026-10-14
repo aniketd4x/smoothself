@@ -62,7 +62,7 @@ const OrderTrackingPage = () => {
         </form>
 
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center space-x-2">
+          <div className="p-4 bg-neutral-100 border border-neutral-300 text-neutral-900 rounded-xl text-xs flex items-center space-x-2">
             <AlertCircle size={16} className="flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -77,8 +77,8 @@ const OrderTrackingPage = () => {
               </div>
               <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
                 order.orderStatus === 'Delivered'
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : 'bg-purple-100 text-brand-primary'
+                  ? 'bg-black text-white'
+                  : 'bg-neutral-200 text-neutral-900'
               }`}>
                 {order.orderStatus}
               </span>

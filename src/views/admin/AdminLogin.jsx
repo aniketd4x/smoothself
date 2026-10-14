@@ -121,9 +121,9 @@ const AdminLogin = () => {
           {errorMsg && (
             <div
               role="alert"
-              className="mb-5 p-3.5 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2.5 text-xs text-red-700"
+              className="mb-5 p-3.5 rounded-lg bg-neutral-100 border border-neutral-300 flex items-start gap-2.5 text-xs text-neutral-900"
             >
-              <AlertCircle size={16} className="text-red-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle size={16} className="text-[#111111] flex-shrink-0 mt-0.5" />
               <span className="leading-relaxed font-medium">{errorMsg}</span>
             </div>
           )}

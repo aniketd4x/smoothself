@@ -53,7 +53,7 @@ const PrivacyPolicyPage = () => {
         {/* Summary Callout Box */}
         <div className="bg-brand-surface/70 border border-brand-border rounded-2xl p-6 mb-12">
           <h3 className="font-serif text-base font-bold text-brand-primary mb-2 flex items-center space-x-2">
-            <ShieldCheck className="text-emerald-600" size={18} />
+            <ShieldCheck className="text-brand-primary" size={18} />
             <span>Our Commitment to Your Privacy</span>
           </h3>
           <p className="text-xs sm:text-sm text-brand-muted leading-relaxed">

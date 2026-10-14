@@ -138,10 +138,10 @@ const AdminDashboard = () => {
 
   const getStatusSelectStyle = (status) => {
     if (status === 'Delivered') {
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      return 'bg-[#F5F5F5] text-[#111111] border-[#E5E5E5]';
     }
     if (status === 'Cancelled') {
-      return 'bg-red-50 text-red-700 border-red-200';
+      return 'bg-black text-white border-black';
     }
     if (status === 'Shipped') {
       return 'bg-[#111111] text-white border-[#111111]';
@@ -271,7 +271,7 @@ const AdminDashboard = () => {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-medium text-[#111111] flex items-center gap-1.5">
-                  <CheckCircle2 size={13} className="text-emerald-600" />
+                  <CheckCircle2 size={13} className="text-[#111111]" />
                   <span>Delivered</span>
                 </span>
                 <span className="font-mono text-[#6B7280]">

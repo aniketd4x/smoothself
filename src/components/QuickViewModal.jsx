@@ -53,7 +53,7 @@ const QuickViewModal = () => {
           <div className="grid grid-cols-1 md:grid-cols-2">
             {/* Gallery */}
             <div className="p-6 bg-brand-surface/50 flex flex-col justify-between">
-              <div className="aspect-square rounded-lg overflow-hidden bg-[#faf9f8] border border-brand-border flex items-center justify-center p-4">
+              <div className="aspect-square rounded-lg overflow-hidden bg-[#f5f5f5] border border-brand-border flex items-center justify-center p-4">
                 <img
                   src={images[selectedImage] || images[0]}
                   alt={product.name}
@@ -67,7 +67,7 @@ const QuickViewModal = () => {
                     <button
                       key={idx}
                       onClick={() => setSelectedImage(idx)}
-                      className={`w-14 h-14 rounded-md overflow-hidden border-2 flex-shrink-0 transition bg-[#faf9f8] flex items-center justify-center p-1 ${
+                      className={`w-14 h-14 rounded-md overflow-hidden border-2 flex-shrink-0 transition bg-[#f5f5f5] flex items-center justify-center p-1 ${
                         selectedImage === idx ? 'border-brand-primary' : 'border-transparent opacity-70'
                       }`}
                     >
@@ -90,7 +90,7 @@ const QuickViewModal = () => {
 
                 {/* Rating */}
                 <div className="flex items-center space-x-1.5 mt-2">
-                  <div className="flex text-amber-400">
+                  <div className="flex text-neutral-900">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} size={14} fill="currentColor" />
                     ))}
@@ -110,7 +110,7 @@ const QuickViewModal = () => {
                       ₹{activeComparePrice}
                     </span>
                   )}
-                  <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded">
+                  <span className="text-xs text-brand-primary font-semibold bg-neutral-100 border border-neutral-200 px-2 py-0.5 rounded">
                     Tax Included
                   </span>
                 </div>
@@ -161,7 +161,7 @@ const QuickViewModal = () => {
                     </button>
                   </div>
 
-                  <span className="text-xs text-emerald-600 font-medium flex items-center space-x-1">
+                  <span className="text-xs text-brand-primary font-medium flex items-center space-x-1">
                     <Check size={14} />
                     <span>In Stock & Ready to Ship</span>
                   </span>

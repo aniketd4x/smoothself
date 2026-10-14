@@ -194,7 +194,7 @@ const Header = () => {
                             logoutUser();
                             setIsUserMenuOpen(false);
                           }}
-                          className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 transition"
+                          className="w-full text-left px-4 py-2 hover:bg-neutral-100 text-neutral-700 hover:text-black transition"
                         >
                           Sign Out
                         </button>
@@ -312,7 +312,7 @@ const Header = () => {
                   </Link>
                   <button
                     onClick={logoutUser}
-                    className="w-full text-center py-2 text-sm text-red-600 font-medium"
+                    className="w-full text-center py-2 text-sm text-neutral-600 hover:text-black font-medium"
                   >
                     Sign Out
                   </button>

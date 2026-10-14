@@ -106,7 +106,7 @@ const CartDrawer = () => {
               <div className="flex items-center space-x-2 text-xs font-medium mb-2 text-brand-primary">
                 <Truck size={16} className="text-brand-primary" />
                 {isFreeShipping ? (
-                  <span className="font-semibold text-emerald-700">🎉 Congratulations! You unlocked Free Shipping!</span>
+                  <span className="font-bold text-brand-primary">🎉 Congratulations! You unlocked Free Shipping!</span>
                 ) : (
                   <span>
                     Add <strong className="text-brand-sale">₹{freeShippingDifference}</strong> more to get <strong>Free Shipping</strong>!
@@ -133,7 +133,7 @@ const CartDrawer = () => {
                   Your cart is empty
                 </h4>
                 <p className="text-xs text-brand-muted max-w-xs mb-6">
-                  Explore our luxury botanical skincare and body elixirs to fill your bag.
+                  Explore our botanical skincare and body elixirs to fill your bag.
                 </p>
                 <button
                   onClick={() => {
@@ -177,7 +177,7 @@ const CartDrawer = () => {
                         </Link>
                         <button
                           onClick={() => removeFromCart(item.key)}
-                          className="text-gray-400 hover:text-red-500 p-1 transition ml-2"
+                          className="text-neutral-400 hover:text-black p-1 transition ml-2"
                           aria-label="Remove item"
                         >
                           <Trash2 size={15} />
@@ -235,14 +235,14 @@ const CartDrawer = () => {
               {/* COUPON CODE ACCORDION */}
               <div>
                 {appliedCoupon ? (
-                  <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg text-xs">
-                    <div className="flex items-center space-x-1.5 text-emerald-800 font-medium">
+                  <div className="flex items-center justify-between bg-neutral-100 border border-neutral-300 px-3 py-2 rounded-lg text-xs">
+                    <div className="flex items-center space-x-1.5 text-neutral-900 font-medium">
                       <Tag size={14} />
                       <span>Coupon <strong>{appliedCoupon.code}</strong> applied (-₹{discountAmount})</span>
                     </div>
                     <button
                       onClick={handleRemoveCoupon}
-                      className="text-red-500 hover:text-red-700 font-semibold text-xs ml-2"
+                      className="text-neutral-500 hover:text-black font-semibold text-xs ml-2"
                     >
                       Remove
                     </button>
@@ -275,7 +275,7 @@ const CartDrawer = () => {
                 </div>
 
                 {appliedCoupon && (
-                  <div className="flex justify-between text-emerald-600">
+                  <div className="flex justify-between text-brand-primary font-medium">
                     <span>Discount ({appliedCoupon.code})</span>
                     <span className="font-semibold">-₹{discountAmount}</span>
                   </div>
@@ -285,7 +285,7 @@ const CartDrawer = () => {
                   <span>Shipping</span>
                   <span className="font-semibold text-brand-text">
                     {shippingCost === 0 ? (
-                      <span className="text-emerald-600 font-bold uppercase">Free</span>
+                      <span className="text-brand-primary font-bold uppercase">Free</span>
                     ) : (
                       `₹${shippingCost}`
                     )}

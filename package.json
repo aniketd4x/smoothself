@@ -15,7 +15,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "SmoothSelf — Luxury Botanical Skincare Platform converted to Next.js",
+  "description": "SmoothSelf — Botanical Skincare Platform converted to Next.js",
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
     "@tailwindcss/postcss": "^4.3.3",

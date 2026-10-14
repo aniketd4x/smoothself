@@ -29,7 +29,7 @@ const ProductCard = ({ product }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* 1. MEDIA CONTAINER */}
-      <div className="relative w-full aspect-square bg-[#faf9f8] overflow-hidden flex items-center justify-center">
+      <div className="relative w-full aspect-square bg-[#f5f5f5] overflow-hidden flex items-center justify-center">
         {/* Badges */}
         <div className="absolute top-3 left-3 z-10 flex flex-col gap-1">
           {product.badges && product.badges.map((badge, idx) => {
@@ -37,9 +37,9 @@ const ProductCard = ({ product }) => {
             if (badge.includes('-') || badge.includes('%') || badge === 'SALE') {
               badgeBg = 'bg-brand-sale text-white';
             } else if (badge === 'HOT') {
-              badgeBg = 'bg-purple-600 text-white';
+              badgeBg = 'bg-neutral-800 text-white';
             } else if (badge === 'NEW') {
-              badgeBg = 'bg-emerald-600 text-white';
+              badgeBg = 'bg-neutral-700 text-white';
             }
             return (
               <span
@@ -134,7 +134,7 @@ const ProductCard = ({ product }) => {
 
           {/* Star Rating */}
           <div className="flex items-center space-x-1 mt-1.5">
-            <div className="flex text-amber-400">
+            <div className="flex text-neutral-900">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}

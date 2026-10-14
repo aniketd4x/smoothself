@@ -169,7 +169,7 @@ const CheckoutPage = () => {
             email: formData.email.trim(),
             contact: formData.phone.trim()
           },
-          theme: { color: '#6b3fa0' },
+          theme: { color: '#000000' },
           handler: async (response) => {
             try {
               // 3. Verify payment signature on the backend
@@ -454,7 +454,7 @@ const CheckoutPage = () => {
                   {/* Razorpay Online Payment */}
                   <label className={`flex items-start space-x-3 p-4 rounded-xl border cursor-pointer transition ${
                     paymentMethod === 'ONLINE'
-                      ? 'border-brand-primary bg-purple-50/40 ring-1 ring-brand-primary'
+                      ? 'border-brand-primary bg-neutral-100 ring-1 ring-brand-primary'
                       : 'border-brand-border hover:bg-brand-surface'
                   }`}>
                     <input
@@ -517,15 +517,15 @@ const CheckoutPage = () => {
                 {/* COUPON INPUT */}
                 <div className="pt-2 border-t border-brand-border">
                   {appliedCoupon ? (
-                    <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg text-xs">
-                      <div className="flex items-center space-x-1.5 text-emerald-800 font-semibold">
+                    <div className="flex items-center justify-between bg-neutral-100 border border-neutral-300 p-2.5 rounded-lg text-xs">
+                      <div className="flex items-center space-x-1.5 text-neutral-900 font-semibold">
                         <Tag size={14} />
                         <span>Coupon <strong>{appliedCoupon.code}</strong> (-₹{discountAmount})</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => setAppliedCoupon(null)}
-                        className="text-red-500 hover:text-red-700 font-bold text-xs"
+                        className="text-neutral-500 hover:text-black font-bold text-xs"
                       >
                         Remove
                       </button>
@@ -559,7 +559,7 @@ const CheckoutPage = () => {
                   </div>
 
                   {appliedCoupon && (
-                    <div className="flex justify-between text-emerald-600 font-medium">
+                    <div className="flex justify-between text-brand-primary font-medium">
                       <span>Discount ({appliedCoupon.code})</span>
                       <span>-₹{discountAmount}.00</span>
                     </div>
@@ -569,7 +569,7 @@ const CheckoutPage = () => {
                     <span>Shipping</span>
                     <span className="font-semibold text-brand-text">
                       {shippingCost === 0 ? (
-                        <span className="text-emerald-700 font-bold uppercase">Free</span>
+                        <span className="text-brand-primary font-bold uppercase">Free</span>
                       ) : (
                         `₹${shippingCost}.00`
                       )}

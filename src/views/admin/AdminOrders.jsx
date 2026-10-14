@@ -241,8 +241,8 @@ const AdminOrders = () => {
                         <span
                           className={`block text-[11px] font-medium ${
                             ord.paymentStatus === 'Paid'
-                              ? 'text-emerald-700'
-                              : 'text-amber-700'
+                              ? 'text-[#111111] font-semibold'
+                              : 'text-[#6B7280]'
                           }`}
                         >
                           {ord.paymentStatus}
@@ -447,7 +447,7 @@ const AdminOrders = () => {
                 {selectedOrder.shippingAddress?.postalCode}
               </p>
               {selectedOrder.customerNotes && (
-                <div className="text-amber-800 bg-amber-50 border border-amber-200 p-2.5 rounded-lg mt-2">
+                <div className="text-[#111111] bg-[#F5F5F5] border border-[#E5E5E5] p-2.5 rounded-lg mt-2">
                   <strong>Note:</strong> {selectedOrder.customerNotes}
                 </div>
               )}

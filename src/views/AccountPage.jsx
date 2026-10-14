@@ -394,7 +394,7 @@ const AccountPage = () => {
 
           <button
             onClick={logoutUser}
-            className="inline-flex items-center space-x-1.5 px-4 py-2 border border-brand-border rounded-lg text-xs font-semibold text-brand-text hover:bg-red-50 hover:text-red-600 transition self-start sm:self-auto"
+            className="inline-flex items-center space-x-1.5 px-4 py-2 border border-brand-border rounded-lg text-xs font-semibold text-brand-text hover:bg-neutral-100 hover:text-black transition self-start sm:self-auto"
           >
             <LogOut size={14} />
             <span>Sign Out</span>
@@ -454,10 +454,10 @@ const AccountPage = () => {
                     <div className="flex items-center space-x-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
                         ord.orderStatus === 'Delivered'
-                          ? 'bg-emerald-100 text-emerald-800'
+                          ? 'bg-black text-white'
                           : ord.orderStatus === 'Shipped'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-purple-100 text-brand-primary'
+                          ? 'bg-neutral-800 text-white'
+                          : 'bg-neutral-200 text-neutral-900'
                       }`}>
                         {ord.orderStatus}
                       </span>
@@ -605,13 +605,13 @@ const AccountPage = () => {
                   </div>
                   <div className="mt-4 pt-3 border-t border-brand-border flex items-center justify-between">
                     {a.isDefault && (
-                      <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded">
+                      <span className="text-[10px] text-brand-primary font-bold bg-neutral-200 px-2 py-0.5 rounded">
                         Default Address
                       </span>
                     )}
                     <button
                       onClick={() => handleDeleteAddress(a._id)}
-                      className="text-red-500 hover:text-red-700 text-xs font-medium inline-flex items-center space-x-1 ml-auto"
+                      className="text-neutral-500 hover:text-black text-xs font-medium inline-flex items-center space-x-1 ml-auto"
                     >
                       <Trash2 size={13} />
                       <span>Remove</span>

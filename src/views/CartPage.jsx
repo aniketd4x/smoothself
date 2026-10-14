@@ -88,7 +88,7 @@ const CartPage = () => {
           <div className="flex items-center space-x-2 text-xs font-medium mb-2 text-brand-primary">
             <Truck size={16} />
             {isFreeShipping ? (
-              <span className="font-bold text-emerald-700">🎉 Congratulations! You have qualified for Free Express Delivery!</span>
+              <span className="font-bold text-brand-primary">🎉 Congratulations! You have qualified for Free Express Delivery!</span>
             ) : (
               <span>Add <strong className="text-brand-sale">₹{freeShippingDifference}</strong> more to get <strong>Free Shipping</strong>!</span>
             )}
@@ -138,7 +138,7 @@ const CartPage = () => {
 
                       <button
                         onClick={() => removeFromCart(item.key)}
-                        className="text-gray-400 hover:text-red-500 text-xs flex items-center space-x-1"
+                        className="text-neutral-400 hover:text-black text-xs flex items-center space-x-1"
                       >
                         <Trash2 size={13} />
                         <span>Remove</span>
@@ -172,15 +172,15 @@ const CartPage = () => {
               {/* Coupon box */}
               <div>
                 {appliedCoupon ? (
-                  <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg text-xs">
-                    <div className="flex items-center space-x-1.5 text-emerald-800 font-semibold">
+                  <div className="flex items-center justify-between bg-neutral-100 border border-neutral-300 p-2.5 rounded-lg text-xs">
+                    <div className="flex items-center space-x-1.5 text-neutral-900 font-semibold">
                       <Tag size={14} />
                       <span>Coupon <strong>{appliedCoupon.code}</strong> (-₹{discountAmount})</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => setAppliedCoupon(null)}
-                      className="text-red-500 hover:text-red-700 font-bold"
+                      className="text-neutral-500 hover:text-black font-bold"
                     >
                       Remove
                     </button>
@@ -212,7 +212,7 @@ const CartPage = () => {
                   <span className="font-semibold text-brand-text">₹{cartSubtotal}</span>
                 </div>
                 {appliedCoupon && (
-                  <div className="flex justify-between text-emerald-600 font-medium">
+                  <div className="flex justify-between text-brand-primary font-medium">
                     <span>Discount</span>
                     <span>-₹{discountAmount}</span>
                   </div>

@@ -10,29 +10,29 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          primary: '#332d55',
-          hover: '#282344',
-          accent: '#9a84c8',
-          sale: '#da3f3f',
+          primary: '#000000',
+          hover: '#262626',
+          accent: '#525252',
+          sale: '#000000',
           bg: '#ffffff',
           surface: '#f5f5f5',
-          border: '#eeeeee',
-          text: '#212121',
-          muted: '#666666'
+          border: '#e5e5e5',
+          text: '#000000',
+          muted: '#737373'
         },
         admin: {
-          primary: '#111111',
+          primary: '#000000',
           hover: '#262626',
           bg: '#ffffff',
           surface: '#f5f5f5',
           border: '#e5e5e5',
-          text: '#111111',
-          muted: '#6b7280'
+          text: '#000000',
+          muted: '#737373'
         }
       },
       fontFamily: {
-        serif: ['Butler', 'Playfair Display', 'serif'],
-        sans: ['Jost', 'Inter', 'sans-serif'],
+        serif: ['Playfair Display', 'Georgia', 'serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         admin: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
       boxShadow: {

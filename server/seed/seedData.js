@@ -374,7 +374,7 @@ const seedAll = async () => {
             ]
           }
         ],
-        badges: ['NEW', 'LUXURY'],
+        badges: ['NEW', 'BOTANICAL'],
         rating: 5.0,
         num_reviews: 14,
         is_featured: true,

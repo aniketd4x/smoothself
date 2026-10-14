@@ -1,6 +1,6 @@
-# Aura Botanica — Luxury Botanical Skincare E-Commerce Platform
+# Aura Botanica — Botanical Skincare E-Commerce Platform
 
-A production-ready e-commerce platform crafted with the visual and UX structure inspired by [smoothself.in](https://smoothself.in/), tailored with a high-end luxury brand identity (**Aura Botanica**), clean plant formulations, and a complete relational MongoDB-backed API architecture and Admin Panel.
+A production-ready e-commerce platform crafted with the visual and UX structure inspired by [smoothself.in](https://smoothself.in/), tailored with a high-end brand identity (**Aura Botanica**), clean plant formulations, and a complete relational MongoDB-backed API architecture and Admin Panel.
 
 ---
 
@@ -9,7 +9,7 @@ A production-ready e-commerce platform crafted with the visual and UX structure 
 ### 1. Frontend & UX (Faithful Re-creation of Reference UX)
 - **Top Announcement Bar:** Dismissible with promo highlight ("Free shipping on orders above ₹450").
 - **Sticky Minimalist Header:** Brand logo, navigation menu, predictive search modal trigger, customer account dropdown, wishlist icon with count badge, and shopping bag trigger with real-time count & subtotal.
-- **Hero Slideshow:** Auto-playing smooth slides with luxury typography, pill tags, and CTA buttons ("Shop Collection").
+- **Hero Slideshow:** Auto-playing smooth slides with elegant typography, pill tags, and CTA buttons ("Shop Collection").
 - **Value Proposition Bar (Icon Box):** Highlights "Deep Skin Hydration", "Long Lasting Fragrance", "Non-Sticky Lightweight Formula", and "Dermatologist Approved".
 - **Product Collection Tabs:** Real-time filter between categories ("All", "Body Lotions & Milks", "Whipped Body Butters", "Exfoliating Scrubs", "Elixirs & Body Oils").
 - **High-Converting Product Cards:** Aspect-ratio imagery with hover image flip, floating badges ("BESTSELLER", "HOT", "NEW", "-17%"), ratings, wishlist toggle, quick view modal, and quick add-to-bag.

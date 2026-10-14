@@ -61,7 +61,7 @@ const Footer = () => {
             </p>
 
             {subscribed ? (
-              <div className="flex items-center space-x-2 text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-3 rounded-lg text-sm">
+              <div className="flex items-center space-x-2 text-brand-primary bg-neutral-100 border border-neutral-300 px-4 py-3 rounded-lg text-sm">
                 <CheckCircle size={18} />
                 <span>Thank you! You are subscribed to SmoothSelf updates.</span>
               </div>

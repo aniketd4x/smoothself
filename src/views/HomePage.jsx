@@ -175,7 +175,7 @@ const HomePage = () => {
               <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end sm:items-center pb-14 sm:pb-0">
                 <div className="max-w-xl text-white space-y-3 sm:space-y-6 animate-fade-in">
                   {banner.tagline && (
-                    <span className="inline-block text-[10px] sm:text-xs font-semibold tracking-[0.2em] sm:tracking-[0.25em] uppercase text-purple-200 bg-black/40 sm:bg-white/10 backdrop-blur-md px-3 sm:px-3.5 py-1 rounded-full border border-white/20">
+                    <span className="inline-block text-[10px] sm:text-xs font-semibold tracking-[0.2em] sm:tracking-[0.25em] uppercase text-white bg-black/40 sm:bg-white/10 backdrop-blur-md px-3 sm:px-3.5 py-1 rounded-full border border-white/20">
                       {banner.tagline}
                     </span>
                   )}
@@ -248,13 +248,13 @@ const HomePage = () => {
               Why You’ll Love {settings.brandName || 'SmoothSelf'}
             </h2>
             <p className="text-xs sm:text-sm text-brand-muted mt-1 max-w-xl mx-auto">
-              Specially formulated for everyday luxury — high potency botanical moisture with a featherlight touch.
+              Specially formulated for everyday hydration — high potency botanical moisture with a featherlight touch.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            <div className="flex flex-col items-center text-center p-5 rounded-2xl bg-[#faf9f8] hover:bg-brand-surface border border-brand-border/40 transition duration-300">
-              <div className="w-14 h-14 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center mb-4 shadow-sm">
+            <div className="flex flex-col items-center text-center p-5 rounded-2xl bg-[#f5f5f5] hover:bg-brand-surface border border-brand-border/40 transition duration-300">
+              <div className="w-14 h-14 rounded-full bg-neutral-100 text-neutral-900 border border-neutral-200 flex items-center justify-center mb-4 shadow-sm">
                 <Sparkles size={26} />
               </div>
               <h3 className="font-serif text-lg font-bold text-brand-primary mb-1.5">
@@ -265,8 +265,8 @@ const HomePage = () => {
               </p>
             </div>
 
-            <div className="flex flex-col items-center text-center p-5 rounded-2xl bg-[#faf9f8] hover:bg-brand-surface border border-brand-border/40 transition duration-300">
-              <div className="w-14 h-14 rounded-full bg-purple-100 text-brand-primary flex items-center justify-center mb-4 shadow-sm">
+            <div className="flex flex-col items-center text-center p-5 rounded-2xl bg-[#f5f5f5] hover:bg-brand-surface border border-brand-border/40 transition duration-300">
+              <div className="w-14 h-14 rounded-full bg-neutral-100 text-neutral-900 border border-neutral-200 flex items-center justify-center mb-4 shadow-sm">
                 <Droplets size={26} />
               </div>
               <h3 className="font-serif text-lg font-bold text-brand-primary mb-1.5">
@@ -277,8 +277,8 @@ const HomePage = () => {
               </p>
             </div>
 
-            <div className="flex flex-col items-center text-center p-5 rounded-2xl bg-[#faf9f8] hover:bg-brand-surface border border-brand-border/40 transition duration-300">
-              <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mb-4 shadow-sm">
+            <div className="flex flex-col items-center text-center p-5 rounded-2xl bg-[#f5f5f5] hover:bg-brand-surface border border-brand-border/40 transition duration-300">
+              <div className="w-14 h-14 rounded-full bg-neutral-100 text-neutral-900 border border-neutral-200 flex items-center justify-center mb-4 shadow-sm">
                 <Wind size={26} />
               </div>
               <h3 className="font-serif text-lg font-bold text-brand-primary mb-1.5">
@@ -289,8 +289,8 @@ const HomePage = () => {
               </p>
             </div>
 
-            <div className="flex flex-col items-center text-center p-5 rounded-2xl bg-[#faf9f8] hover:bg-brand-surface border border-brand-border/40 transition duration-300">
-              <div className="w-14 h-14 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mb-4 shadow-sm">
+            <div className="flex flex-col items-center text-center p-5 rounded-2xl bg-[#f5f5f5] hover:bg-brand-surface border border-brand-border/40 transition duration-300">
+              <div className="w-14 h-14 rounded-full bg-neutral-100 text-neutral-900 border border-neutral-200 flex items-center justify-center mb-4 shadow-sm">
                 <Leaf size={26} />
               </div>
               <h3 className="font-serif text-lg font-bold text-brand-primary mb-1.5">
@@ -312,25 +312,25 @@ const HomePage = () => {
               Our Exclusive Formulations • 200ml Bottles
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-brand-primary leading-tight">
-              Two Everyday Luxury Lotions
+              Two Everyday Botanical Lotions
             </h2>
             <p className="text-sm text-brand-muted mt-3">
               Crafted with clean actives, nourishing botanical lipids, and irresistible long-lasting fragrances. ₹249 each (MRP ₹299).
             </p>
           </div>
 
-          {/* 2-Column Luxury Product Presentation */}
+          {/* 2-Column Botanical Product Presentation */}
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-              <div className="animate-pulse bg-[#faf9f8] aspect-[4/5] rounded-2xl"></div>
-              <div className="animate-pulse bg-[#faf9f8] aspect-[4/5] rounded-2xl"></div>
+              <div className="animate-pulse bg-[#f5f5f5] aspect-[4/5] rounded-2xl"></div>
+              <div className="animate-pulse bg-[#f5f5f5] aspect-[4/5] rounded-2xl"></div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
               {products.map((product) => (
                 <div
                   key={product._id}
-                  className="bg-[#faf9f8] rounded-2xl border border-brand-border/70 hover:border-brand-primary hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between group"
+                  className="bg-[#f5f5f5] rounded-2xl border border-brand-border/70 hover:border-brand-primary hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between group"
                 >
                   {/* Photo Frame (Properly contained, no cropping) */}
                   <Link
@@ -358,7 +358,7 @@ const HomePage = () => {
                   {/* Product Details & Actions */}
                   <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between">
                     <div>
-                      <div className="flex items-center space-x-1 text-amber-500 text-xs mb-2">
+                      <div className="flex items-center space-x-1 text-neutral-900 text-xs mb-2">
                         {[...Array(5)].map((_, i) => (
                           <Star key={i} size={14} fill="currentColor" />
                         ))}
@@ -381,7 +381,7 @@ const HomePage = () => {
                       <ul className="space-y-1.5 mb-6 text-xs text-brand-text">
                         {product.benefits?.slice(0, 3).map((b, idx) => (
                           <li key={idx} className="flex items-center space-x-2">
-                            <CheckCircle size={14} className="text-emerald-600 flex-shrink-0" />
+                            <CheckCircle size={14} className="text-neutral-900 flex-shrink-0" />
                             <span><strong>{b.title}</strong></span>
                           </li>
                         ))}
@@ -397,7 +397,7 @@ const HomePage = () => {
                         <span className="text-sm text-brand-muted line-through">
                           MRP ₹{product.compareAtPrice}
                         </span>
-                        <span className="text-xs font-bold text-brand-sale bg-rose-50 px-2 py-0.5 rounded">
+                        <span className="text-xs font-bold text-brand-primary bg-neutral-100 border border-neutral-200 px-2 py-0.5 rounded">
                           Tax Included
                         </span>
                       </div>
@@ -432,7 +432,7 @@ const HomePage = () => {
       </section>
 
       {/* 4. CHOOSE YOUR SENSATION (DUAL COMPARISON SPOTLIGHT) */}
-      <section className="py-16 md:py-24 bg-[#faf9f8] border-y border-brand-border">
+      <section className="py-16 md:py-24 bg-[#f5f5f5] border-y border-brand-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-xl mx-auto mb-14">
             <span className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-muted block mb-2">
@@ -450,7 +450,7 @@ const HomePage = () => {
             {/* Spotlight 1: Strawberry */}
             <div className="bg-white rounded-2xl p-6 sm:p-8 border border-brand-border shadow-sm flex flex-col justify-between">
               <div>
-                <div className="inline-block bg-rose-100 text-rose-800 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">
+                <div className="inline-block bg-neutral-100 text-brand-primary border border-neutral-300 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">
                   🍓 Radiance & Glow
                 </div>
                 <h3 className="font-serif text-2xl font-bold text-brand-primary mb-2">
@@ -460,7 +460,7 @@ const HomePage = () => {
                   Infused with pure natural strawberry fruit extracts that actively brighten, even out dull texture, and leave your skin sparkling with a crisp, sweet berry aura.
                 </p>
 
-                <div className="space-y-3 mb-6 bg-[#faf9f8] p-4 rounded-xl text-xs">
+                <div className="space-y-3 mb-6 bg-[#f5f5f5] p-4 rounded-xl text-xs">
                   <div className="flex justify-between border-b border-brand-border/60 pb-2">
                     <span className="text-brand-muted font-medium">Fragrance</span>
                     <span className="font-bold text-brand-primary">Fruity Fresh Strawberry</span>
@@ -491,7 +491,7 @@ const HomePage = () => {
             {/* Spotlight 2: Vanilla */}
             <div className="bg-white rounded-2xl p-6 sm:p-8 border border-brand-border shadow-sm flex flex-col justify-between">
               <div>
-                <div className="inline-block bg-purple-100 text-brand-primary text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">
+                <div className="inline-block bg-neutral-100 text-brand-primary border border-neutral-300 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">
                   🍦 Calming Hydration
                 </div>
                 <h3 className="font-serif text-2xl font-bold text-brand-primary mb-2">
@@ -501,7 +501,7 @@ const HomePage = () => {
                   Rich in Madagascar vanilla bean extract and plant squalane to deeply soothe dry skin, relax the senses with warm gourmand vanilla, and lock in moisture for 24 hours.
                 </p>
 
-                <div className="space-y-3 mb-6 bg-[#faf9f8] p-4 rounded-xl text-xs">
+                <div className="space-y-3 mb-6 bg-[#f5f5f5] p-4 rounded-xl text-xs">
                   <div className="flex justify-between border-b border-brand-border/60 pb-2">
                     <span className="text-brand-muted font-medium">Fragrance</span>
                     <span className="font-bold text-brand-primary">Warm Calming Vanilla</span>
@@ -593,9 +593,9 @@ const HomePage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-2xl bg-[#faf9f8] border border-brand-border flex flex-col justify-between">
+            <div className="p-8 rounded-2xl bg-[#f5f5f5] border border-brand-border flex flex-col justify-between">
               <div>
-                <div className="flex text-amber-400 mb-4">
+                <div className="flex text-neutral-900 mb-4">
                   {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
                 </div>
                 <h4 className="font-serif text-base font-bold text-brand-primary mb-2">
@@ -610,16 +610,16 @@ const HomePage = () => {
                   <p className="text-xs font-bold text-brand-primary">Priya Sharma</p>
                   <p className="text-[10px] text-brand-muted">Strawberry Lotion Buyer</p>
                 </div>
-                <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-100 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                <span className="text-[10px] text-black font-semibold bg-neutral-200 px-2 py-0.5 rounded-full flex items-center space-x-1">
                   <CheckCircle size={10} />
                   <span>Verified Buyer</span>
                 </span>
               </div>
             </div>
 
-            <div className="p-8 rounded-2xl bg-[#faf9f8] border border-brand-border flex flex-col justify-between">
+            <div className="p-8 rounded-2xl bg-[#f5f5f5] border border-brand-border flex flex-col justify-between">
               <div>
-                <div className="flex text-amber-400 mb-4">
+                <div className="flex text-neutral-900 mb-4">
                   {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
                 </div>
                 <h4 className="font-serif text-base font-bold text-brand-primary mb-2">
@@ -634,16 +634,16 @@ const HomePage = () => {
                   <p className="text-xs font-bold text-brand-primary">Ananya Deshmukh</p>
                   <p className="text-[10px] text-brand-muted">Vanilla Lotion Buyer</p>
                 </div>
-                <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-100 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                <span className="text-[10px] text-black font-semibold bg-neutral-200 px-2 py-0.5 rounded-full flex items-center space-x-1">
                   <CheckCircle size={10} />
                   <span>Verified Buyer</span>
                 </span>
               </div>
             </div>
 
-            <div className="p-8 rounded-2xl bg-[#faf9f8] border border-brand-border flex flex-col justify-between">
+            <div className="p-8 rounded-2xl bg-[#f5f5f5] border border-brand-border flex flex-col justify-between">
               <div>
-                <div className="flex text-amber-400 mb-4">
+                <div className="flex text-neutral-900 mb-4">
                   {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
                 </div>
                 <h4 className="font-serif text-base font-bold text-brand-primary mb-2">
@@ -658,7 +658,7 @@ const HomePage = () => {
                   <p className="text-xs font-bold text-brand-primary">Sneha Patil</p>
                   <p className="text-[10px] text-brand-muted">SmoothSelf Duo Buyer</p>
                 </div>
-                <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-100 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                <span className="text-[10px] text-black font-semibold bg-neutral-200 px-2 py-0.5 rounded-full flex items-center space-x-1">
                   <CheckCircle size={10} />
                   <span>Verified Buyer</span>
                 </span>
@@ -673,22 +673,22 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             <div className="space-y-1">
-              <Truck size={24} className="mx-auto text-purple-300 mb-2" />
+              <Truck size={24} className="mx-auto text-neutral-400 mb-2" />
               <p className="text-xs sm:text-sm font-semibold">Free Express Shipping</p>
               <p className="text-[11px] text-gray-300">On all orders above ₹450</p>
             </div>
             <div className="space-y-1">
-              <Sparkles size={24} className="mx-auto text-purple-300 mb-2" />
-              <p className="text-xs sm:text-sm font-semibold">Luxury Formulations</p>
+              <Sparkles size={24} className="mx-auto text-neutral-400 mb-2" />
+              <p className="text-xs sm:text-sm font-semibold">Botanical Formulations</p>
               <p className="text-[11px] text-gray-300">Pure botanical extracts</p>
             </div>
             <div className="space-y-1">
-              <ShieldCheck size={24} className="mx-auto text-purple-300 mb-2" />
+              <ShieldCheck size={24} className="mx-auto text-neutral-400 mb-2" />
               <p className="text-xs sm:text-sm font-semibold">100% Clean & Vegan</p>
               <p className="text-[11px] text-gray-300">Dermatologist Tested</p>
             </div>
             <div className="space-y-1">
-              <CreditCard size={24} className="mx-auto text-purple-300 mb-2" />
+              <CreditCard size={24} className="mx-auto text-neutral-400 mb-2" />
               <p className="text-xs sm:text-sm font-semibold">100% Secure Payments</p>
               <p className="text-[11px] text-gray-300">UPI, Cards & NetBanking</p>
             </div>

@@ -289,7 +289,7 @@ const ProductDetailPage = () => {
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
-                    className={`w-16 h-16 md:w-20 md:h-20 aspect-square rounded-lg overflow-hidden border-2 flex-shrink-0 transition bg-[#faf9f8] flex items-center justify-center p-1.5 ${
+                    className={`w-16 h-16 md:w-20 md:h-20 aspect-square rounded-lg overflow-hidden border-2 flex-shrink-0 transition bg-[#f5f5f5] flex items-center justify-center p-1.5 ${
                       selectedImage === idx ? 'border-brand-primary shadow-sm' : 'border-brand-border opacity-70 hover:opacity-100'
                     }`}
                   >
@@ -300,7 +300,7 @@ const ProductDetailPage = () => {
             )}
 
             {/* Main Stage Image (Maintains actual image size & 1:1 aspect ratio on desktop) */}
-            <div className="flex-1 relative aspect-square bg-[#faf9f8] rounded-2xl overflow-hidden border border-brand-border flex items-center justify-center p-4 sm:p-6 lg:p-8 max-w-[620px]">
+            <div className="flex-1 relative aspect-square bg-[#f5f5f5] rounded-2xl overflow-hidden border border-brand-border flex items-center justify-center p-4 sm:p-6 lg:p-8 max-w-[620px]">
               {/* Badges */}
               <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
                 {product.badges?.map((badge, idx) => (
@@ -352,7 +352,7 @@ const ProductDetailPage = () => {
 
               {/* Star Rating & Review Anchor */}
               <div className="flex items-center space-x-2 mt-3">
-                <div className="flex text-amber-400">
+                <div className="flex text-neutral-900">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
@@ -383,7 +383,7 @@ const ProductDetailPage = () => {
                     </span>
                   )}
                   {discountPercent > 0 && (
-                    <span className="text-xs font-bold text-brand-sale bg-red-50 px-2 py-0.5 rounded border border-red-200">
+                    <span className="text-xs font-bold text-brand-primary bg-neutral-100 px-2 py-0.5 rounded border border-neutral-200">
                       -{discountPercent}% OFF
                     </span>
                   )}
@@ -426,8 +426,8 @@ const ProductDetailPage = () => {
 
               {/* Stock Indicator */}
               <div className="mt-5 flex items-center space-x-2 text-xs">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span className="text-emerald-700 font-medium">
+                <div className="w-2 h-2 rounded-full bg-neutral-900 animate-pulse"></div>
+                <span className="text-brand-primary font-medium">
                   {product.stock > 10 ? 'In Stock — Dispatches within 24 Hours' : `Only ${product.stock} items left in stock!`}
                 </span>
               </div>
@@ -594,7 +594,7 @@ const ProductDetailPage = () => {
                 Customer Reviews
               </h2>
               <div className="flex items-center space-x-2 mt-2">
-                <div className="flex text-amber-400">
+                <div className="flex text-neutral-900">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} size={18} fill="currentColor" />
                   ))}
@@ -623,7 +623,7 @@ const ProductDetailPage = () => {
               
               <div>
                 <label className="block text-xs font-semibold text-brand-text mb-1">Rating</label>
-                <div className="flex space-x-1 text-amber-400">
+                <div className="flex space-x-1 text-neutral-900">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
@@ -701,7 +701,7 @@ const ProductDetailPage = () => {
               reviews.map((rev) => (
                 <div key={rev._id} className="p-6 bg-white rounded-xl border border-brand-border">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex text-amber-400">
+                    <div className="flex text-neutral-900">
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} size={14} fill={i < rev.rating ? 'currentColor' : 'none'} stroke="currentColor" />
                       ))}
@@ -722,7 +722,7 @@ const ProductDetailPage = () => {
 
                   <div className="mt-3 flex items-center space-x-2">
                     <span className="text-xs font-semibold text-brand-text">{rev.userName}</span>
-                    <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium flex items-center space-x-1">
+                    <span className="text-[10px] text-black bg-neutral-200 px-2 py-0.5 rounded-full font-medium flex items-center space-x-1">
                       <CheckCircle size={10} />
                       <span>Verified Buyer</span>
                     </span>

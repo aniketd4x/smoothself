@@ -55,7 +55,7 @@ const ShippingPolicyPage = () => {
         {/* Highlight Feature Badges */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
           <div className="bg-brand-surface/70 border border-brand-border rounded-xl p-5 text-center">
-            <PackageCheck size={24} className="text-emerald-600 mx-auto mb-2" />
+            <PackageCheck size={24} className="text-brand-primary mx-auto mb-2" />
             <h4 className="font-bold text-brand-primary text-xs sm:text-sm mb-1">Free Delivery &gt; ₹{freeThreshold}</h4>
             <p className="text-[11px] text-brand-muted">Complimentary shipping automatically applied on all orders above ₹{freeThreshold}.</p>
           </div>
@@ -117,7 +117,7 @@ const ShippingPolicyPage = () => {
                   <tr>
                     <td className="p-3.5 font-semibold text-brand-text">Mumbai & Maharashtra</td>
                     <td className="p-3.5">Mumbai, Thane, Pune, Navi Mumbai, Nashik</td>
-                    <td className="p-3.5 text-emerald-700 font-semibold">1 – 2 Business Days</td>
+                    <td className="p-3.5 text-brand-primary font-semibold">1 – 2 Business Days</td>
                   </tr>
                   <tr>
                     <td className="p-3.5 font-semibold text-brand-text">Tier 1 Metro Cities</td>
