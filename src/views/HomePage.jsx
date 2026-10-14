@@ -134,7 +134,7 @@ const HomePage = () => {
   return (
     <div className="w-full">
       {/* 1. HERO SLIDESHOW SECTION */}
-      <section className="relative w-full h-[76vh] sm:h-[75vh] md:h-[82vh] min-h-[520px] bg-brand-primary overflow-hidden">
+      <section className="relative w-full aspect-[9/16] min-h-[540px] max-h-[85svh] sm:aspect-auto sm:h-[75vh] md:h-[82vh] bg-brand-primary overflow-hidden">
         {banners.map((banner, index) => {
           const desktopImg = banner.imageUrl || (index === 0 ? heroStrawberryImg : heroVanillaImg);
           const mobileImg = banner.mobileImageUrl || (index === 0 ? heroStrawberryMobileImg : heroVanillaMobileImg);
@@ -156,7 +156,7 @@ const HomePage = () => {
                   <img
                     src={desktopImg}
                     alt={banner.title}
-                    className="w-full h-full object-cover object-center select-none"
+                    className="w-full h-full object-cover object-top sm:object-[75%_center] md:object-[70%_center] select-none"
                     loading={index === 0 ? 'eager' : 'lazy'}
                     onError={(e) => {
                       if (e.currentTarget.src !== desktopImg) {
@@ -168,7 +168,7 @@ const HomePage = () => {
                   />
                 </picture>
                 {/* Adaptive Dark Vignette: vertical on mobile for readability, horizontal on desktop */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/20 sm:bg-gradient-to-r sm:from-black/75 sm:via-black/45 sm:to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent sm:bg-gradient-to-r sm:from-black/75 sm:via-black/45 sm:to-transparent"></div>
               </div>
 
               {/* Slide Content */}
