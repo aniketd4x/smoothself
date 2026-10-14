@@ -69,7 +69,7 @@ async function runTests() {
 
   // 7. Admin Login
   const adminLogin = await testEndpoint('/api/auth/admin/login', 'POST', {
-    email: 'admin@aurabotanica.com',
+    email: 'admin@smoothself.in',
     password: 'admin123456'
   });
   const adminToken = adminLogin.data?.token;
@@ -82,7 +82,7 @@ async function runTests() {
   });
   console.log('8. Coupon Validation (WELCOME10):', coupon.status, `Discount: ₹${coupon.data?.coupon?.discountAmount}`);
 
-  // 9. Place Test Order (Testing Buying / Checkout)
+  // 9. Place Test Order (Testing Buying / Checkout via Online Payment)
   const firstProd = products.data?.products?.[0] || {
     _id: 'prod-strawberry-200',
     name: 'Strawberry Lotion',
@@ -116,7 +116,8 @@ async function runTests() {
     }],
     subtotal: firstProd.price,
     totalAmount: firstProd.price,
-    paymentMethod: 'COD'
+    paymentMethod: 'ONLINE',
+    paymentStatus: 'Paid'
   }, {
     'Authorization': `Bearer ${customerLogin.data?.token}`
   });

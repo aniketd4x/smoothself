@@ -27,7 +27,15 @@ const pages = [
   '/admin/banners',
   '/admin/blog',
   '/admin/faqs',
-  '/admin/settings'
+  '/admin/settings',
+  '/product/strawberry-lotion',
+  '/product/vanilla-body-lotion',
+  '/order-success/AB-555027-809',
+  '/policy/privacy',
+  '/privacy',
+  '/terms',
+  '/shipping',
+  '/refund'
 ];
 
 function fetchPage(path) {

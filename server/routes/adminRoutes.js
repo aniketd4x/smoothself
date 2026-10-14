@@ -4,6 +4,48 @@ const supabaseService = require('../services/supabaseService');
 const { getSupabase } = require('../config/supabase');
 const { protect, adminOnly } = require('../middleware/auth');
 
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'smoothself_ultra_secure_jwt_secret_key_2026';
+
+// Admin Login endpoint
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Please provide email and password' });
+    }
+    const cleanEmail = email.trim().toLowerCase();
+    const adminUser = await supabaseService.findUserByEmail(cleanEmail);
+    if (!adminUser || adminUser.role !== 'admin' || !adminUser.password) {
+      return res.status(401).json({ success: false, message: 'Invalid admin credentials or unauthorized' });
+    }
+    let isMatch = false;
+    try {
+      isMatch = bcrypt.compareSync(password, adminUser.password);
+    } catch {
+      isMatch = (adminUser.password === password);
+    }
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid admin credentials or unauthorized' });
+    }
+    const token = jwt.sign({ id: adminUser._id || adminUser.id }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: adminUser._id || adminUser.id,
+        _id: adminUser._id || adminUser.id,
+        name: adminUser.name,
+        email: adminUser.email,
+        role: adminUser.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Admin Dashboard KPI Stats directly from Supabase
 router.get('/dashboard-stats', protect, adminOnly, async (req, res) => {
   try {

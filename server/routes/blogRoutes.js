@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
 });
 
 // Admin: Get all blogs from Supabase
-router.get('/admin/all', protect, adminOnly, async (req, res) => {
+router.get(['/all', '/admin/all'], protect, adminOnly, async (req, res) => {
   try {
     const posts = await supabaseService.getBlogs(true);
     res.json({ success: true, count: posts.length, posts });

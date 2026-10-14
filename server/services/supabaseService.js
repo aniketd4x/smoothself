@@ -241,7 +241,17 @@ async function getProductByIdOrSlug(idOrSlug) {
   if (isUuid) {
     query = query.eq('id', idOrSlug);
   } else {
-    query = query.or(`slug.eq.${idOrSlug},sku.eq.${idOrSlug}`);
+    const slugStr = String(idOrSlug).trim().toLowerCase();
+    const orClauses = [`slug.eq.${slugStr}`, `sku.eq.${slugStr}`];
+    if (slugStr.includes('strawberry')) {
+      orClauses.push('slug.eq.strawberry-vitamin-e-body-lotion');
+      orClauses.push('slug.eq.strawberry-lotion');
+    }
+    if (slugStr.includes('vanilla')) {
+      orClauses.push('slug.eq.vanilla-vitamin-e-body-lotion');
+      orClauses.push('slug.eq.vanilla-body-lotion');
+    }
+    query = query.or(orClauses.join(','));
   }
 
   const { data, error } = await query.maybeSingle();
@@ -650,11 +660,21 @@ async function updateOrderStatus(id, { orderStatus, paymentStatus, courier, trac
 
 async function getProductReviews(productId) {
   const sb = getClient();
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(productId);
+  let resolvedId = productId;
+  let isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(productId);
+  if (!isUuid && productId) {
+    try {
+      const prod = await getProductByIdOrSlug(productId);
+      if (prod && (prod._id || prod.id)) {
+        resolvedId = prod._id || prod.id;
+        isUuid = true;
+      }
+    } catch (_) {}
+  }
   let query = sb.from('reviews').select('*').eq('is_approved', true);
 
   if (isUuid) {
-    query = query.eq('product_id', productId);
+    query = query.eq('product_id', resolvedId);
   }
 
   const { data, error } = await query.order('created_at', { ascending: false });
@@ -664,10 +684,20 @@ async function getProductReviews(productId) {
 
 async function createReview(reviewData) {
   const sb = getClient();
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reviewData.productId);
+  let resolvedId = reviewData.productId;
+  let isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(resolvedId);
+  if (!isUuid && reviewData.productId) {
+    try {
+      const prod = await getProductByIdOrSlug(reviewData.productId);
+      if (prod && (prod._id || prod.id)) {
+        resolvedId = prod._id || prod.id;
+        isUuid = true;
+      }
+    } catch (_) {}
+  }
 
   const supabaseRow = {
-    product_id: isUuid ? reviewData.productId : null,
+    product_id: isUuid ? resolvedId : null,
     user_name: reviewData.userName,
     user_email: reviewData.userEmail || '',
     rating: Number(reviewData.rating) || 5,

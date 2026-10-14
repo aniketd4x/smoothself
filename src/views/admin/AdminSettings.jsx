@@ -32,7 +32,7 @@ const AdminSettings = () => {
   // Admin Credentials State
   const [adminCreds, setAdminCreds] = useState({
     name: user?.name || 'Store Administrator',
-    email: user?.email || 'admin@aurabotanica.com',
+    email: user?.email || 'admin@smoothself.in',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',

@@ -52,7 +52,7 @@ router.get('/admin/all', protect, adminOnly, async (req, res) => {
 });
 
 // Admin: Approve review in Supabase
-router.put('/admin/:id/approve', protect, adminOnly, async (req, res) => {
+router.put(['/:id/approve', '/admin/:id/approve'], protect, adminOnly, async (req, res) => {
   try {
     const review = await supabaseService.approveReview(req.params.id);
     res.json({ success: true, message: 'Review approved', review });
@@ -62,7 +62,7 @@ router.put('/admin/:id/approve', protect, adminOnly, async (req, res) => {
 });
 
 // Admin: Delete review in Supabase
-router.delete('/admin/:id', protect, adminOnly, async (req, res) => {
+router.delete(['/:id', '/admin/:id'], protect, adminOnly, async (req, res) => {
   try {
     await supabaseService.deleteReview(req.params.id);
     res.json({ success: true, message: 'Review deleted' });

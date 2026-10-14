@@ -12,7 +12,8 @@ const ProductCard = ({ product }) => {
   const primaryImage = product.images?.[0] || 'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=800&auto=format&fit=crop';
   const secondaryImage = product.images?.[1] || primaryImage;
 
-  const inWishlist = isInWishlist(product._id);
+  const prodId = product._id || product.id;
+  const inWishlist = isInWishlist(prodId);
 
   const handleQuickAdd = (e) => {
     e.preventDefault();
@@ -58,7 +59,7 @@ const ProductCard = ({ product }) => {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              toggleWishlist(product._id);
+              toggleWishlist(prodId);
             }}
             className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md transition ${
               inWishlist

@@ -15,7 +15,7 @@ const WishlistPage = () => {
       .then(r => r.json())
       .then(data => {
         if (data.success) {
-          const matched = data.products.filter(p => wishlist.includes(p._id));
+          const matched = data.products.filter(p => wishlist.includes(p._id) || wishlist.includes(p.id));
           setProducts(matched);
         }
       })

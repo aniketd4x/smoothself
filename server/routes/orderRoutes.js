@@ -184,8 +184,8 @@ router.get('/:id', protect, async (req, res) => {
   }
 });
 
-// Admin: Get all orders with filter & search from Supabase
-router.get('/admin/all', protect, adminOnly, async (req, res) => {
+// Admin: Get all orders with filter & search from Supabase (standard REST and /admin/all)
+const handleGetAllOrders = async (req, res) => {
   try {
     const orders = await supabaseService.getAllOrders(req.query);
     res.json({
@@ -196,10 +196,13 @@ router.get('/admin/all', protect, adminOnly, async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
-});
+};
 
-// Admin: Update order status in Supabase
-router.put('/admin/:id/status', protect, adminOnly, async (req, res) => {
+router.get('/', protect, adminOnly, handleGetAllOrders);
+router.get('/admin/all', protect, adminOnly, handleGetAllOrders);
+
+// Admin: Update order status in Supabase (standard REST and /admin/:id/status)
+const handleUpdateStatus = async (req, res) => {
   try {
     const { orderStatus, paymentStatus, courier, trackingNumber, note } = req.body;
     const updated = await supabaseService.updateOrderStatus(req.params.id, {
@@ -218,6 +221,9 @@ router.put('/admin/:id/status', protect, adminOnly, async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
-});
+};
+
+router.put('/:id/status', protect, adminOnly, handleUpdateStatus);
+router.put('/admin/:id/status', protect, adminOnly, handleUpdateStatus);
 
 module.exports = router;
