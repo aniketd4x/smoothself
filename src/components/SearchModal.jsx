@@ -28,7 +28,7 @@ const SearchModal = () => {
         })
         .catch(console.error)
         .finally(() => setIsLoading(false));
-    }, 250);
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
@@ -70,7 +70,7 @@ const SearchModal = () => {
                 autoFocus
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search vanilla lotion, body butter, scrub, glow oils..."
+                placeholder="Search vanilla, strawberry, body lotion, vitamin e..."
                 className="w-full pl-11 pr-24 py-3 bg-brand-surface border border-brand-border rounded-lg text-sm focus:outline-none focus:border-brand-primary transition"
               />
               <Search size={19} className="absolute left-3.5 text-brand-muted" />
@@ -85,12 +85,12 @@ const SearchModal = () => {
             {/* Popular quick search tags */}
             <div className="flex items-center gap-2 mt-3 overflow-x-auto text-xs text-brand-muted">
               <span className="font-semibold text-brand-text">Popular:</span>
-              {['Vanilla Lotion', 'Strawberry Souffle', 'Honey Butter', 'Coffee Scrub', 'Body Oil'].map((tag) => (
+              {['Vanilla Lotion', 'Strawberry Lotion', 'Body Lotion', 'Vitamin E', 'Daily Hydration'].map((tag) => (
                 <button
                   key={tag}
                   type="button"
                   onClick={() => setSearchTerm(tag)}
-                  className="px-2.5 py-1 bg-brand-surface hover:bg-brand-border/60 rounded-full border border-brand-border text-brand-text transition"
+                  className="px-2.5 py-1 bg-brand-surface hover:bg-brand-border/60 rounded-full border border-brand-border text-brand-text transition whitespace-nowrap"
                 >
                   {tag}
                 </button>
@@ -109,7 +109,7 @@ const SearchModal = () => {
                 </p>
                 {results.map((product) => (
                   <Link
-                    key={product._id}
+                    key={product._id || product.id || product.slug}
                     to={`/product/${product.slug}`}
                     onClick={() => setIsSearchOpen(false)}
                     className="flex items-center space-x-3 p-2 rounded-lg hover:bg-brand-surface transition group"
@@ -133,7 +133,7 @@ const SearchModal = () => {
               </div>
             ) : searchTerm ? (
               <div className="py-8 text-center text-xs text-brand-muted">
-                No formulations matching "{searchTerm}". Try another keyword or browse all products.
+                No formulations matching "{searchTerm}". Try searching for vanilla, strawberry, or lotion.
               </div>
             ) : (
               <div className="py-8 text-center text-xs text-brand-muted">

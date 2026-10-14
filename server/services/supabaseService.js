@@ -216,20 +216,111 @@ async function getProducts(options = {}) {
   if (options.category && options.category !== 'all') {
     query = query.or(`category_id.eq.${options.category},category_name.ilike.%${options.category}%`);
   }
-  if (options.search) {
-    query = query.or(`name.ilike.%${options.search}%,short_description.ilike.%${options.search}%,description.ilike.%${options.search}%`);
-  }
   if (options.featured) {
     query = query.eq('is_featured', true);
   }
-  if (options.sort === 'price-low') query = query.order('price', { ascending: true });
-  else if (options.sort === 'price-high') query = query.order('price', { ascending: false });
-  else if (options.sort === 'rating') query = query.order('rating', { ascending: false });
-  else query = query.order('created_at', { ascending: false });
+  if (!options.search) {
+    if (options.sort === 'price-low') query = query.order('price', { ascending: true });
+    else if (options.sort === 'price-high') query = query.order('price', { ascending: false });
+    else if (options.sort === 'rating') query = query.order('rating', { ascending: false });
+    else query = query.order('created_at', { ascending: false });
+  }
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);
-  return (data || []).map(normalizeProduct);
+
+  let products = (data || []).map(normalizeProduct);
+
+  // If search query is provided, perform smart multi-term token & relevance matching
+  if (options.search && typeof options.search === 'string') {
+    const rawSearch = options.search.trim().toLowerCase();
+    if (rawSearch) {
+      const tokens = rawSearch.split(/\s+/).filter(Boolean);
+
+      const scored = [];
+      for (const p of products) {
+        const name = (p.name || '').toLowerCase();
+        const slug = (p.slug || '').toLowerCase();
+        const shortDesc = (p.shortDescription || p.short_description || '').toLowerCase();
+        const desc = (p.description || '').toLowerCase();
+        const cat = (p.categoryName || p.category_name || '').toLowerCase();
+        const tags = Array.isArray(p.tags) ? p.tags.join(' ').toLowerCase() : (p.tags || '').toLowerCase();
+        const ingredients = (p.ingredients || '').toLowerCase();
+        const sku = (p.sku || '').toLowerCase();
+
+        let score = 0;
+        let matchedTokens = 0;
+
+        // Exact phrase match
+        if (name.includes(rawSearch)) score += 50;
+        if (slug.includes(rawSearch)) score += 40;
+        if (shortDesc.includes(rawSearch)) score += 20;
+
+        // Token matches
+        for (const t of tokens) {
+          let tokenMatched = false;
+          if (name.includes(t)) {
+            score += 15;
+            tokenMatched = true;
+          }
+          if (slug.includes(t)) {
+            score += 12;
+            tokenMatched = true;
+          }
+          if (cat.includes(t)) {
+            score += 8;
+            tokenMatched = true;
+          }
+          if (shortDesc.includes(t)) {
+            score += 6;
+            tokenMatched = true;
+          }
+          if (tags.includes(t)) {
+            score += 5;
+            tokenMatched = true;
+          }
+          if (ingredients.includes(t)) {
+            score += 4;
+            tokenMatched = true;
+          }
+          if (desc.includes(t)) {
+            score += 2;
+            tokenMatched = true;
+          }
+          if (sku.includes(t)) {
+            score += 10;
+            tokenMatched = true;
+          }
+
+          if (tokenMatched) matchedTokens++;
+        }
+
+        // Boost score if all search terms matched
+        if (matchedTokens === tokens.length) {
+          score += 25;
+        }
+
+        if (score > 0) {
+          scored.push({ product: p, score, matchedTokens });
+        }
+      }
+
+      // Sort by score or by requested sort option
+      if (options.sort === 'price-low') {
+        scored.sort((a, b) => (a.product.price || 0) - (b.product.price || 0));
+      } else if (options.sort === 'price-high') {
+        scored.sort((a, b) => (b.product.price || 0) - (a.product.price || 0));
+      } else if (options.sort === 'rating') {
+        scored.sort((a, b) => (b.product.rating || 0) - (a.product.rating || 0));
+      } else {
+        scored.sort((a, b) => b.score - a.score);
+      }
+
+      products = scored.map(s => s.product);
+    }
+  }
+
+  return products;
 }
 
 async function getProductByIdOrSlug(idOrSlug) {

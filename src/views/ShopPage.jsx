@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { SlidersHorizontal, ChevronRight, X } from 'lucide-react';
+import { SlidersHorizontal, ChevronRight, X, Search } from 'lucide-react';
 
 const heroStrawberryImg = '/hero_strawberry.jpg';
 const heroVanillaImg = '/hero_vanilla.jpg';
@@ -47,6 +47,11 @@ const ShopPage = () => {
   const selectedCategory = searchParams.get('category') || 'all';
   const selectedSort = searchParams.get('sort') || 'newest';
   const searchTerm = searchParams.get('search') || '';
+  const [searchInput, setSearchInput] = useState(searchTerm);
+
+  useEffect(() => {
+    setSearchInput(searchTerm);
+  }, [searchTerm]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -62,12 +67,13 @@ const ShopPage = () => {
       fetch(url).then(r => r.json()).catch(() => null),
       fetch('/api/categories').then(r => r.json()).catch(() => null)
     ]).then(([prodData, catData]) => {
-      if (prodData && prodData.success && Array.isArray(prodData.products) && prodData.products.length > 0) {
+      if (prodData && prodData.success && Array.isArray(prodData.products)) {
         setProducts(prodData.products);
       } else {
         let filtered = [...FALLBACK_PRODUCTS];
         if (searchTerm) {
-          filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+          const s = searchTerm.toLowerCase();
+          filtered = filtered.filter(p => p.name.toLowerCase().includes(s));
         }
         setProducts(filtered);
       }
@@ -80,6 +86,24 @@ const ShopPage = () => {
       setProducts(FALLBACK_PRODUCTS);
     }).finally(() => setIsLoading(false));
   }, [selectedCategory, selectedSort, searchTerm]);
+
+  const handleSearchSubmit = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const nextParams = new URLSearchParams(searchParams);
+    if (searchInput.trim()) {
+      nextParams.set('search', searchInput.trim());
+    } else {
+      nextParams.delete('search');
+    }
+    setSearchParams(nextParams);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('search');
+    setSearchParams(nextParams);
+  };
 
   const handleCategoryChange = (slug) => {
     const nextParams = new URLSearchParams(searchParams);
@@ -98,6 +122,7 @@ const ShopPage = () => {
   };
 
   const clearFilters = () => {
+    setSearchInput('');
     setSearchParams({});
   };
 
@@ -113,7 +138,7 @@ const ShopPage = () => {
         </nav>
 
         {/* HEADER TITLE */}
-        <div className="text-center max-w-2xl mx-auto mb-10">
+        <div className="text-center max-w-2xl mx-auto mb-6">
           <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-brand-primary">
             {searchTerm ? `Search Results for "${searchTerm}"` : 'All Formulations'}
           </h1>
@@ -121,6 +146,36 @@ const ShopPage = () => {
             Handcrafted with cold-pressed natural botanicals, pure Madagascar vanilla, and clinical actives for velvety, hydrated skin.
           </p>
         </div>
+
+        {/* IN-PAGE SEARCH BAR */}
+        <form onSubmit={handleSearchSubmit} className="max-w-md mx-auto mb-8">
+          <div className="relative flex items-center">
+            <Search size={16} className="absolute left-3.5 text-brand-muted pointer-events-none" />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search vanilla, strawberry, body lotion..."
+              className="w-full pl-10 pr-20 py-2.5 bg-brand-surface border border-brand-border rounded-full text-xs sm:text-sm text-brand-text focus:outline-none focus:border-brand-primary transition shadow-sm"
+            />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute right-12 text-brand-muted hover:text-brand-primary p-1"
+                aria-label="Clear"
+              >
+                <X size={14} />
+              </button>
+            )}
+            <button
+              type="submit"
+              className="absolute right-1.5 px-3 py-1 bg-brand-primary hover:bg-brand-hover text-white text-xs font-semibold rounded-full transition"
+            >
+              Search
+            </button>
+          </div>
+        </form>
 
         {/* FILTER & SORT BAR */}
         <div className="flex flex-col md:flex-row items-center justify-between pb-6 mb-8 border-b border-brand-border gap-4">
@@ -189,11 +244,7 @@ const ShopPage = () => {
             {searchTerm && (
               <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full bg-brand-surface border border-brand-border text-xs text-brand-primary">
                 <span>Search: {searchTerm}</span>
-                <button onClick={() => {
-                  const p = new URLSearchParams(searchParams);
-                  p.delete('search');
-                  setSearchParams(p);
-                }}><X size={13} /></button>
+                <button onClick={handleClearSearch}><X size={13} /></button>
               </span>
             )}
             <button
@@ -224,7 +275,9 @@ const ShopPage = () => {
               No matching products found
             </h3>
             <p className="text-xs text-brand-muted max-w-sm mx-auto mb-6">
-              Try adjusting your category selection or searching for a different keyword.
+              {searchTerm
+                ? `We couldn't find any formulations matching "${searchTerm}". Try searching for vanilla, strawberry, or lotion.`
+                : 'Try adjusting your category selection or searching for a different keyword.'}
             </p>
             <button
               onClick={clearFilters}

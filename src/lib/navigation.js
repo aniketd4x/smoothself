@@ -118,10 +118,17 @@ export const useParams = () => {
 export const useSearchParams = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const params = useNextSearchParams();
+  let params = null;
+  try {
+    params = useNextSearchParams();
+  } catch (e) {
+    // In SSR or outside Suspense, fallback safely
+  }
+
+  const safeParams = params || new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
 
   const setSearchParams = (newParams) => {
-    const nextSearchParams = new URLSearchParams(params?.toString() || '');
+    const nextSearchParams = new URLSearchParams(safeParams?.toString() || '');
     if (newParams instanceof URLSearchParams) {
       router.push(`${pathname}?${newParams.toString()}`);
     } else if (typeof newParams === 'object') {
@@ -136,7 +143,7 @@ export const useSearchParams = () => {
     }
   };
 
-  return [params, setSearchParams];
+  return [safeParams, setSearchParams];
 };
 
 /**
