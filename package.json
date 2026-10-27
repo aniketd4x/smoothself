@@ -10,7 +10,8 @@
     "test:pages": "node verify_next_pages.js",
     "server": "node server/server.js",
     "seed": "node server/seed/seedData.js",
-    "verify": "node verify_system.js"
+    "verify": "node verify_system.js",
+    "keepalive": "node scripts/supabase-keepalive.js"
   },
   "keywords": [],
   "author": "",

@@ -102,3 +102,59 @@ npm run verify
 npm run seed
 ```
 
+
+---
+
+## ⚡ Supabase Keep-Alive Mechanism (Prevent Automatic Pausing)
+
+### Background & Supabase Inactivity Policy
+Supabase projects on the **Free Tier** automatically pause after **7 consecutive days of inactivity** (lack of user database queries or API traffic). When paused:
+- Database connections stop accepting traffic.
+- Frontend requests fail (e.g. 503 Service Unavailable).
+- Projects can be manually resumed from the Supabase Dashboard for up to 1 year.
+- **Paid Plans (Pro $25/mo, Team, Enterprise)** are never paused for inactivity.
+
+### Keep-Alive Solution
+This repository includes an automated keep-alive health-check mechanism designed to safely reset Supabase's 7-day inactivity timer without creating database writes or excessive traffic:
+
+1. **Lightweight PostgREST Query**:
+   Sends an authenticated `GET /rest/v1/categories?select=id&limit=1` request using the project's public anon key. PostgREST executes a `SELECT id FROM categories LIMIT 1` directly on PostgreSQL, which is registered as real user database query activity in Supabase platform telemetry.
+2. **Scheduled Interval**:
+   Runs every 5 days via GitHub Actions (`cron: '18 4 */5 * *'`), safely within the 7-day inactivity threshold.
+3. **Randomized Delay (Jitter)**:
+   Includes a 0-30s randomized jitter delay to avoid rigid execution timestamps.
+4. **Resilience & Retries**:
+   Includes 3 retry attempts with exponential backoff (5s, 10s, 20s) and a 15-second per-request timeout.
+5. **Zero Write Footprint**:
+   Purely read-only query fetching a single UUID (~50 bytes payload).
+6. **Detailed CI Summary**:
+   Automatically generates visual Markdown reports in the GitHub Actions Step Summary.
+
+### Required GitHub Repository Secrets
+To enable the scheduled GitHub Action on your repository (`https://github.com/aniketd4x/smoothself`):
+1. Navigate to **Settings** > **Secrets and variables** > **Actions**.
+2. Click **New repository secret** and add:
+   - `SUPABASE_URL`: Your Supabase project URL (e.g., `https://<project-ref>.supabase.co`).
+   - `SUPABASE_ANON_KEY`: Your Supabase anon / publishable key (found in Supabase Dashboard > Project Settings > API).
+
+> ⚠️ **Security Note**: Never commit `service_role` keys or database passwords. The keep-alive mechanism only requires the read-only `anon` key.
+
+### Local Testing & Manual Trigger
+You can test the keep-alive health check locally at any time:
+```bash
+npm run keepalive
+```
+
+You can also trigger it manually from GitHub:
+1. Go to the **Actions** tab in your GitHub repository.
+2. Select **Supabase Keep-Alive Health-Check**.
+3. Click **Run workflow**.
+
+### Monitoring and Alerting
+- **Execution History**: View real-time logs, response latency, and execution timestamps under the **Actions** tab.
+- **Email Notifications**: If all 3 retry attempts fail, the workflow exits with code 1 and GitHub will automatically send an email alert to the repository owner.
+- **Backend Health Check**: You can also query the live backend server at `/api/health/supabase` (or `/api/health?db=true`) to check database connectivity and latency.
+
+### Important Limitations & Best Practices
+- **GitHub Actions 60-Day Inactivity Rule**: In public repositories, GitHub automatically suspends scheduled workflows (`cron`) if the repository receives no commits or pull requests for 60 consecutive days. If your repository is idle, ensure you either re-enable the workflow when prompted by GitHub's email reminder, or set up an external pinger (e.g. UptimeRobot or cron-job.org) hitting `/api/health/supabase`.
+- **Permanent Solution**: For mission-critical production applications requiring guaranteed 24/7 uptime without reliance on scheduled pings, upgrading to the **Supabase Pro Plan ($25/month)** is recommended. Pro projects are permanently kept active and never paused.

@@ -41,9 +41,98 @@ app.use('/api/razorpay', require('./routes/razorpayRoutes'));
 const uploadsPath = path.join(__dirname, '../uploads');
 app.use('/uploads', express.static(uploadsPath));
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', brand: 'SmoothSelf', timestamp: new Date() });
+// Health check endpoint (supports ?db=true or /api/health/supabase for live Supabase check)
+app.get('/api/health', async (req, res) => {
+  const checkDb = req.query.db === 'true' || req.query.check === 'supabase';
+  if (!checkDb) {
+    return res.json({ status: 'ok', brand: 'SmoothSelf', timestamp: new Date() });
+  }
+
+  const { getSupabase } = require('./config/supabase');
+  const sb = getSupabase();
+  if (!sb) {
+    return res.status(503).json({
+      status: 'error',
+      database: 'disconnected',
+      brand: 'SmoothSelf',
+      timestamp: new Date()
+    });
+  }
+
+  const start = Date.now();
+  try {
+    const { error } = await sb.from('categories').select('id').limit(1);
+    const latencyMs = Date.now() - start;
+    if (error) {
+      return res.status(502).json({
+        status: 'error',
+        database: 'unreachable',
+        error: error.message,
+        latencyMs,
+        brand: 'SmoothSelf',
+        timestamp: new Date()
+      });
+    }
+    return res.json({
+      status: 'ok',
+      database: 'connected',
+      latencyMs,
+      brand: 'SmoothSelf',
+      timestamp: new Date()
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: 'error',
+      database: 'error',
+      error: err.message,
+      brand: 'SmoothSelf',
+      timestamp: new Date()
+    });
+  }
+});
+
+app.get('/api/health/supabase', async (req, res) => {
+  const { getSupabase } = require('./config/supabase');
+  const sb = getSupabase();
+  if (!sb) {
+    return res.status(503).json({
+      status: 'error',
+      database: 'disconnected',
+      brand: 'SmoothSelf',
+      timestamp: new Date()
+    });
+  }
+
+  const start = Date.now();
+  try {
+    const { error } = await sb.from('categories').select('id').limit(1);
+    const latencyMs = Date.now() - start;
+    if (error) {
+      return res.status(502).json({
+        status: 'error',
+        database: 'unreachable',
+        error: error.message,
+        latencyMs,
+        brand: 'SmoothSelf',
+        timestamp: new Date()
+      });
+    }
+    return res.json({
+      status: 'ok',
+      database: 'connected',
+      latencyMs,
+      brand: 'SmoothSelf',
+      timestamp: new Date()
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: 'error',
+      database: 'error',
+      error: err.message,
+      brand: 'SmoothSelf',
+      timestamp: new Date()
+    });
+  }
 });
 
 // Serve frontend build if exists

@@ -1,0 +1,59 @@
+name: Supabase Keep-Alive Health-Check
+
+on:
+  schedule:
+    # Runs at 04:18 UTC every 5 days (1st, 6th, 11th, 16th, 21st, 26th, 31st)
+    # Supabase Free Tier pauses after 7 consecutive days of inactivity.
+    # A 5-day cycle ensures continuous activity well inside the 7-day limit.
+    - cron: '18 4 */5 * *'
+
+  # Allows manual triggers directly from GitHub Actions tab for testing
+  workflow_dispatch:
+    inputs:
+      skip_delay:
+        description: 'Skip randomized jitter delay'
+        required: false
+        type: boolean
+        default: true
+      custom_endpoint:
+        description: 'Custom Supabase endpoint path (optional)'
+        required: false
+        type: string
+        default: '/rest/v1/categories?select=id&limit=1'
+
+# Prevent multiple simultaneous runs
+concurrency:
+  group: supabase-keepalive
+  cancel-in-progress: false
+
+jobs:
+  ping-supabase:
+    name: Ping Supabase Database
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run Supabase Keep-Alive Health-Check
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          KEEPALIVE_ENDPOINT: ${{ github.event.inputs.custom_endpoint || '/rest/v1/categories?select=id&limit=1' }}
+          RANDOM_DELAY_MAX_SEC: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.skip_delay == 'true') && '0' || '30' }}
+          MAX_RETRIES: 3
+          RETRY_DELAY_MS: 5000
+          TIMEOUT_MS: 15000
+        run: |
+          node scripts/supabase-keepalive.js
+
+      - name: Alert on Failure
+        if: failure()
+        run: |
+          echo "::error title=Supabase Keep-Alive Failed::The Supabase health-check failed after all retry attempts. Your database may be paused, in maintenance, or the credentials in GitHub Secrets may need rotation. Check https://supabase.com/dashboard"
